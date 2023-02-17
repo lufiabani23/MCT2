@@ -1,0 +1,124 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    margin: 0 0 70px; /* altura do seu footer */
+}
+
+
+.navbar {
+    background-color: #00c2cb !important;
+}
+
+.navbar img {
+    width: 5em;
+    border-radius: 50%;
+    box-shadow: 0px 2px 2px #005257;
+    position: absolute;
+    margin-top: -0.5em;
+}
+
+.navbar li {
+    list-style: none;
+}
+
+.navbar a {
+    color: white;
+}
+
+.nav {
+    background-color:#00c2cb !important;
+    border-radius: 10px;
+    margin-top: 50px;
+}
+
+.nav a {
+    color: #005257;
+    font-size: 14px;
+}
+
+.nav .active {
+    background-color: #005257 !important;
+}
+
+/*FORMATAÇÕES DO TEXTO SEJA BEM VINDO*/
+
+.bemvindo {
+    text-align: center;
+}
+
+/*FORMATAÇÕES DO RODAPÉ*/
+
+footer {
+    position: absolute;
+    bottom: 0;
+    color: #FFF;
+    width: 100%;
+    height: 70px;    
+    text-align: center;
+    background-color: #00c2cb;
+}
+
+
+/* formatações cards */
+
+.card {
+    width: 280px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 2px;
+    margin: 0 auto;
+}
+
+.card-body {
+    padding-bottom: 2px !important;
+    padding-top: 10px !important;
+}
+
+.card p{
+    margin: 0;
+    padding: 0;
+}
+
+.icone-card {
+    font-size: 70px;
+}
+
+.icone-card img {
+    width: 150%;
+}
+
+.titulo-card {
+    font-size: 15px;
+    text-align: right;
+}
+
+.subtitulo-card {
+    font-size: 40px;
+    text-align: right;
+}
+
+
+
+
+/* FORMATAÇÕES DA PÁGINA DE PACIENTES */
+
+table.lista-pacientes tr td a {
+    color: white !important;
+}
+
+
+
+
+/*BOTÃO NOVO PACIENTE  -  arrumar class*/
+
+button.novo-paciente {
+    background-color: #005257 !important;
+    border: none;
+    color: white;
+}
+
+button.novo-paciente:hover {
+    background-color:#00c2cb !important;
+    color: white;
+}
