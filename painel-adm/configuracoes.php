@@ -30,6 +30,15 @@ if (isset($_GET['btnApagarConvenio'])) {
     }
 }
 
+// ALTERAR VALOR PARTICULAR
+if (isset($_POST['btnNovoParticular'])) {
+    $novoValorCovenio = $_POST['novoValor'];
+    $sqlNovoValorConvenio = $conexao -> prepare("UPDATE convenios SET Valor_Consulta = $novoValorCovenio WHERE (Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])");
+    $sqlNovoValorConvenio -> execute();
+    echo "<script language='javascript'> window.alert('Valor alterado com sucesso!'); </script>";
+    echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
+}
+
 ?>
 
 
@@ -73,7 +82,6 @@ if (isset($_GET['btnApagarConvenio'])) {
                                     <td><?php echo $linha['Valor_Consulta'] ?></td>
                                     <td><a href="<?php echo $_SERVER['PHP_SELF']."?acao=".$item5."&btnApagarConvenio=&ID=".$linha['ID']; ?>" class="btn btn-danger" name="btnApagarConvenio">Excluir</a></td>
                                 </tr>
-
                         <?php }
                         } ?>
                     </tbody>
@@ -114,10 +122,20 @@ if (isset($_GET['btnApagarConvenio'])) {
                 <?php
                 $sqlParticular = $conexao->prepare("SELECT * FROM convenios where (Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])");
                 $sqlParticular->execute();
-                $convenioParticular = $sqlParticular->fetchALL();
-                echo "$convenioParticular[0][1]"; 
-                ?>         
-
+                $convenioParticular = $sqlParticular->fetchALL(PDO::FETCH_ASSOC);
+                $valorParticular = $convenioParticular[0]['Valor_Consulta'];
+                ?> 
+                
+                <p style="font-size: 1.5em; text-align: center">Valor atual da consulta particular: <b><?php echo "$valorParticular"; ?></b></p>
+                <h5>Alterar valor</h5>
+                <div class="row"></div>
+                    <form action="index.php?acao=configuracoes" method="POST">
+                        <div class="form-row">
+                        <input type="text" placeholder="Novo valor" class="form-control col-lg-9 col-sm-12 mr-1" name="novoValor">
+                        <input type="submit" class="btn btn-primary col-lg-2 col-sm-12" value="Alterar" name="btnNovoParticular">
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
