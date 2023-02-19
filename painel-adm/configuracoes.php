@@ -124,10 +124,9 @@ if (isset($_POST['btnNovoParticular'])) {
                 $sqlParticular = $conexao->prepare("SELECT * FROM convenios where (Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])");
                 $sqlParticular->execute();
                 $convenioParticular = $sqlParticular->fetchALL(PDO::FETCH_ASSOC);
-                $valorParticular = $convenioParticular[0]['Valor_Consulta'];
                 ?>
 
-                <p style="font-size: 1.5em; text-align: center">Valor atual da consulta particular: <b><?php echo "$valorParticular"; ?></b></p>
+                <p style="font-size: 1.5em; text-align: center">Valor atual da consulta particular: <b><?php echo $convenioParticular[0]['Valor_Consulta']; ?></b></p>
                 <h5>Alterar valor</h5>
                 <div class="row"></div>
                 <form action="index.php?acao=configuracoes" method="POST">
