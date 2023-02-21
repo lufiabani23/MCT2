@@ -5,7 +5,26 @@
 include_once('../conexao.php');
 @session_start();
 
-//O convenio com nome "Particular" deve ser cadastrado antes de utilizar o sistema
+// ALERTS
+if (@($_GET['alert']) == "success") { ?>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>Sucesso!</strong> Operação realizada com sucesso.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  </div>
+  <?php }
+  elseif (@($_GET['alert']) == "danger") { ?>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Erro!</strong> A operação não foi realizada.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  </div>
+<?php }
+
+
+//O convenio com nome "Particular" é cadastrado automaticamente
 
 // Buscar por Convenios Cadastrados
 $sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[id_psicologo] and Nome != 'Particular')");
@@ -34,6 +53,8 @@ if (isset($_POST['btnNovoPaciente'])) {
   $convenio = $_POST['Convenio'];
   $CPF = $_POST['CPF'];
   $genero = $_POST['Genero'];
+  $prontuario = $_POST['Prontuario'];
+  $endereco = $_POST['Endereco'];
 
   $sqlBuscaConvenio = $conexao->prepare("SELECT ID FROM convenios where (Nome = '$convenio')");
   $sqlBuscaConvenio->execute();
@@ -44,24 +65,23 @@ if (isset($_POST['btnNovoPaciente'])) {
     echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";
   } else {
     try {
-      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,null,?,?,?)");
+      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,null,?,?,?,?,null,?)");
       $sql->execute(array(
-        $nome, $telefone, $email, $nascimento, $idconvenio[0]['ID'], $genero, $CPF, $_SESSION['id_psicologo']
+        $nome, $telefone, $email, $nascimento, $idconvenio[0]['ID'], $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
       ));
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes'; </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
-      echo "<script language='javascript'> window.alert('Erro ao cadastrar paciente!'); </script>";
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes'; </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=danger'; </script>";
     }
   }
 }
 
-//EDIÇÃO DE PACIENTE (ARRUMAR)
+// MODAL EDITAR PACIENTE
 if (@($_GET['funcao']) == "editar") {
   $idEditarPaciente = $_GET['id'];
-  $sqlEditarPaciente =  $conexao->prepare("SELECT * from Paciente where(ID = $idEditarPaciente)");
-  $sqlEditarPaciente->execute();
-  $EditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
+
+  $sqlEditarPaciente =  $conexao->query("SELECT * from Paciente where(ID = $idEditarPaciente)");
+  $dadosEditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
   ?>
   <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog" aria-labelledby="#modalEditar" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -73,27 +93,27 @@ if (@($_GET['funcao']) == "editar") {
           </button>
         </div>
         <div class="modal-body">
-          <form id="CadastroPaciente" method="POST" action="index.php?acao=pacientes">
+          <form id="EditarPaciente" method="POST" action="index.php?acao=pacientes&id=<?php echo $idEditarPaciente; ?>">
             <div class="form-row">
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Nome">Nome Completo</label>
-                <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do paciente" required value="<?php echo $EditarPaciente[0]['Nome'] ?>">
+                <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do paciente" required value="<?php echo $dadosEditarPaciente[0]['Nome'] ?>">
               </div>
 
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Telefone">Telefone</label>
-                <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do paciente" required value="<?php echo $EditarPaciente[0]['Telefone'] ?>">
+                <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do paciente" required value="<?php echo $dadosEditarPaciente[0]['Telefone'] ?>">
               </div>
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Email">E-mail</label>
-                <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do paciente" value="<?php echo $EditarPaciente[0]['Email'] ?>">
+                <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do paciente" value="<?php echo $dadosEditarPaciente[0]['Email'] ?>">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-md-4 col-sm-12">
                 <label for="CPF">CPF</label>
-                <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do paciente" required value="<?php echo $EditarPaciente[0]['CPF'] ?>">
+                <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do paciente" required value="<?php echo $dadosEditarPaciente[0]['CPF'] ?>">
               </div>
 
               <div class="form-group col-md-4 col-sm-12">
@@ -110,19 +130,19 @@ if (@($_GET['funcao']) == "editar") {
 
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Nascimento">Data de Nascimento</label>
-                <input type="date" class="form-control" id="Nascimento" name="Nascimento" required value="<?php echo $EditarPaciente[0]['Data_Nascimento'] ?>">
+                <input type="date" class="form-control" id="Nascimento" name="Nascimento" required value="<?php echo $dadosEditarPaciente[0]['Data_Nascimento'] ?>">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Endereco">Endereço</label>
-                <input id="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
+                <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do paciente" class="form-control" value="<?php echo $dadosEditarPaciente[0]['Endereco'] ?>">
               </div>
 
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Genero">Gênero</label>
-                <select id="Genero" name="Genero" class="form-control" required value="<?php echo $EditarPaciente[0]['Genero'] ?>">
+                <select id="Genero" name="Genero" class="form-control" required value="<?php echo $dadosEditarPaciente[0]['Genero'] ?>">
                   <option>Masculino</option>
                   <option>Feminino</option>
                   <option>Outro</option>
@@ -132,7 +152,7 @@ if (@($_GET['funcao']) == "editar") {
             <div class="form-row">
               <div class="form-group col-md-12 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" name="Prontuario"></textarea>
+                <textarea id="Prontuario" class="form-control" name="Prontuario"><?php echo $dadosEditarPaciente[0]['Prontuario'] ?></textarea>
               </div>
             </div>
 
@@ -151,19 +171,66 @@ if (@($_GET['funcao']) == "editar") {
         </div>
 
         <div class="modal-footer">
-          <button form="CadastroPaciente" type="submit" class="btn btn-success" name="btnNovoPaciente">Cadastrar Paciente</button>
-          <button form="CadastroPaciente" type="reset" class="btn btn-danger" name="<?php echo $item2 ?>">Limpar Dados</button>
+          <button form="EditarPaciente" type="submit" class="btn btn-warning text-light" name="btnEditarPaciente">Editar Paciente</button>
+          <button form="EditarPaciente" data-dismiss="modal" class="btn btn-secondary" name="<?php echo $item2 ?>">Cancelar</button>
         </div>
       </div>
     </div>
   </div>
   <script>
-  $("#modalEditar").modal("show");
-</script>
-<?php }
+    $("#modalEditar").modal("show");
+  </script>
+  <?php }
+
+// EDITAR PACIENTE
+if (isset($_POST['btnEditarPaciente'])) {
+
+  $idEditarPaciente = $_GET['id'];
+  $nome = $_POST['Nome'];
+  $telefone = $_POST['Telefone'];
+  $email = $_POST['Email'];
+  $nascimento = $_POST['Nascimento'];
+  $convenio = $_POST['Convenio'];
+  $CPF = $_POST['CPF'];
+  $genero = $_POST['Genero'];
+  $prontuario = $_POST['Prontuario'];
+  $endereco = $_POST['Endereco'];
+
+  $sqlBuscaConvenio = $conexao->prepare("SELECT ID FROM convenios where (Nome = '$convenio' and Psicologo = '$_SESSION[id_psicologo]')");
+  $sqlBuscaConvenio->execute();
+  $idconvenio = $sqlBuscaConvenio->fetchAll(PDO::FETCH_ASSOC);
+
+  try {
+    $sqlEditarPaciente = $conexao->prepare("UPDATE paciente SET
+    Nome = :nome,
+    Telefone = :telefone,
+    Email = :email,
+    Data_Nascimento = :nascimento,
+    Genero = :genero,
+    CPF = :cpf,
+    Endereco = :endereco
+    WHERE (ID = '$idEditarPaciente')");
+
+    $sqlEditarPaciente->execute(
+      array(
+        ':nome' => $nome,
+        ':telefone' => $telefone,
+        ':email' => $email,
+        'nascimento' => $nascimento,
+        ':genero' => $genero,
+        ':cpf' => $CPF,
+        ':endereco' => $endereco
+      )
+    );
+    echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+  } catch (Exception $e) {
+    echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=danger'; </script>";
+  }
+}
 
 // MODAL EXCLUIR PACIENTE
-if (@($_GET['funcao']) == "excluir") { $idexclusao = $_GET['id']; ?>
+if (@($_GET['funcao']) == "excluir") {
+  $idexclusao = $_GET['id']; ?>
   <div class="modal fade" id="ConfirmExclusaoPaciente" tabindex="-1" role="dialog" aria-labelledby="#ConfirmExclusaoPaciente" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -183,19 +250,21 @@ if (@($_GET['funcao']) == "excluir") { $idexclusao = $_GET['id']; ?>
       </div>
     </div>
   </div>
-  <script>$("#ConfirmExclusaoPaciente").modal("show")</script>
-<?php } ?>
-
+  <script>
+    $("#ConfirmExclusaoPaciente").modal("show")
+  </script>
+<?php
+} ?>
 <?php
 // EXCLUSAO PACIENTE
-
-  if (@($_GET['funcao']) == "exclusao"){
-    $idexclusao = $_GET['id'];
-    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = $idexclusao");
-    $sql->execute();
-    echo "<script language='javascript'> window.location='index.php?acao=pacientes'; </script>";
+if (@($_GET['funcao']) == "exclusao") {
+  $idexclusao = $_GET['id'];
+  $sql = $conexao->prepare("DELETE FROM paciente WHERE id = $idexclusao");
+  $sql->execute();
+  ?>
+  <?php
+  echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   }
-
 ?>
 
 
@@ -276,8 +345,9 @@ if (@($_GET['funcao']) == "excluir") { $idexclusao = $_GET['id']; ?>
           <div class="form-row">
             <div class="form-group col-md-6 col-sm-12">
               <label for="Endereco">Endereço</label>
-              <input id="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
+              <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
             </div>
+
             <div class="form-group col-md-6 col-sm-12">
               <label for="Genero">Gênero</label>
               <select id="Genero" name="Genero" class="form-control" required>
@@ -358,5 +428,3 @@ if (@($_GET['funcao']) == "excluir") { $idexclusao = $_GET['id']; ?>
     } ?>
   </tbody>
 </table>
-
-<!-- SCRIPT PARA CHAMAR A MODAL EDITAR -->
