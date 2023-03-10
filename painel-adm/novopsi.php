@@ -19,7 +19,7 @@ if (isset($_POST['btnNovoPsi'])){
     $telefone = $_POST['telefone'];
     $email = $_POST['email'];
     $CRP = $_POST['CRP'];
-    $senha = $_POST['senha'];
+    $senha = md5($_POST['senha']);
 
 if (empty($nome) or empty($telefone) or empty($email) or empty($CRP) or empty($senha)) {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";

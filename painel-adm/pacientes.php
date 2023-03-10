@@ -31,7 +31,6 @@ $sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[i
 $sql->execute();
 $listaconvenios = $sql->fetchALL();
 
-
 // Sistema para buscar pacientes
 if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
   $txtBuscarPaciente = "%" . $_GET['txtBuscarPacientes'] . "%";
@@ -208,6 +207,7 @@ if (isset($_POST['btnEditarPaciente'])) {
     Data_Nascimento = :nascimento,
     Genero = :genero,
     CPF = :cpf,
+    Prontuario = :prontuario,
     Endereco = :endereco
     WHERE (ID = '$idEditarPaciente')");
 
@@ -219,6 +219,7 @@ if (isset($_POST['btnEditarPaciente'])) {
         'nascimento' => $nascimento,
         ':genero' => $genero,
         ':cpf' => $CPF,
+        ':prontuario' => $prontuario,
         ':endereco' => $endereco
       )
     );
