@@ -25,7 +25,7 @@ if (isset($_GET['btnApagarConvenio'])) {
         echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
     } catch (Exception $e) {
         echo "<script language='javascript'> window.alert('Você ainda tem pacientes vinculados a este convênio.'); </script>";
-        echo "<script language='javascript'> window.location='index.php?acao=pacientes'; </script>";
+        echo "<script language='javascript'> window.location='index.php?acao=pacientes&idc=$idApagarConvenio'; </script>";
     }
 }
 
