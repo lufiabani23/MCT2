@@ -1,5 +1,4 @@
 <script>
-
 	function modalShow() {
 		$('#modalShow').modal('show');
 	}
@@ -44,23 +43,23 @@
 
 		events: [
 					<?php foreach($events as $event): 
-						$start = explode(" ", $event['inicio']);
-						$end = explode(" ", $event['termino']);
+						$start = explode(" ", $event['Data_Inicio']);
+						$end = explode(" ", $event['Data_Fim']);
 						if($start[1] == '00:00:00'){
 							$start = $start[0];
 						}else{
-							$start = $event['inicio'];
+							$start = $event['Data_Inicio'];
 						}
 						if($end[1] == '00:00:00'){
 							$end = $end[0];
 						}else{
-							$end = $event['termino'];
+							$end = $event['Data_Fim'];
 						}
 					?>
 					{
-						id: '<?php echo $event['id_evento']; ?>',
-						title: '<?php echo $event['titulo']; ?>',
-						description: '<?php echo $event['descricao']; ?>',
+						id: '<?php echo $event['ID']; ?>',
+						title: '<?php echo $event['Paciente']; ?>',
+						description: '<?php echo $event['Motivo']; ?>',
 						start: '<?php echo $start; ?>',
 						end: '<?php echo $end; ?>',
 					},

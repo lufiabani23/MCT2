@@ -3,7 +3,7 @@
         private $hostname = 'localhost';
         private $username = 'root';
         private $password = '';
-        private $database = 'calendario';
+        private $database = 'systempsi';
         private $conexao;
 
         public function conectar(){
