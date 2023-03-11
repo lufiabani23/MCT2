@@ -9,11 +9,20 @@ date_default_timezone_set('America/Sao_Paulo');
 $database = new Database();
 $db = $database->conectar();
 
+// BUSCA OS EVENTOS CADASTRADOS
 $sql = "SELECT ID, Paciente, Motivo, Data_Inicio, Data_Fim FROM agendar
 Where Psicologo = $_SESSION[id_psicologo]";
 $req = $db->prepare($sql);
 $req->execute();
 $events = $req->fetchAll();
+
+// CONVERTE O ID DO PACIENTE PARA O NOME DELE
+foreach ($events as $i => $linha) {
+	$sqlPaciente = $db -> prepare("SELECT Nome FROM paciente where (ID = $linha[Paciente])");
+	$sqlPaciente -> execute();
+	$nomePaciente = $sqlPaciente ->fetchAll();
+	$events[$i]["Paciente"] = $nomePaciente[0][0];
+}
 ?>
 
 <!-- Page Content -->
