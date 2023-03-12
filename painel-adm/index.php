@@ -75,7 +75,7 @@ if ($_SESSION['nome_psicologo'] == "") {
 
     <nav class="navbar navbar-dark">
         <div class="col-md-12">
-            <a class="navbar-brand col-sm-12 col-lg-6"><img src="../img/logosistemapsico.png"></a>
+            <div class="navbar-brand col-sm-12 col-lg-6"><img src="../img/logosistemapsico.png"></div>
             <li class="float-right nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Psicólogo - <?php echo $_SESSION['nome_psicologo']; ?>

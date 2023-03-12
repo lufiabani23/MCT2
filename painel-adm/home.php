@@ -20,7 +20,7 @@
                         </div>
                         <div class="col-7 col-md-8">
                             <div class="numbers">
-                                <p class="titulo-card">Pacientes ao total</p>
+                                <p class="titulo-card">Total de Pacientes</p>
                                 <p class="subtitulo-card"><?php echo $_SESSION['totalPacientes']; ?>
                                 <p>
                             </div>
@@ -29,30 +29,6 @@
                 </div>
                 <div class="card-footer rodape-card">
                     Módulo Meus Pacientes
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-12 col-md-12 col-lg-4 mb-4">
-            <div class="card card-stats">
-                <div class="card-body ">
-                    <div class="row">
-                        <div class="col-5 col-md-4">
-                            <div class="icone-card text-center icon-warning mr-2 mb-1">
-                                <i class="bi bi-pencil-square"></i>
-                            </div>
-                        </div>
-                        <div class="col-7 col-md-8">
-                            <div class="numbers">
-                                <p class="titulo-card">Atendimentos no dia</p>
-                                <p class="subtitulo-card">0
-                                <p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer rodape-card">
-                    Módulo Atendendimento
                 </div>
             </div>
         </div>
@@ -77,6 +53,30 @@
                 </div>
                 <div class="card-footer rodape-card">
                     Módulo Agenda
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-12 col-lg-4 mb-4">
+            <div class="card card-stats">
+                <div class="card-body ">
+                    <div class="row">
+                        <div class="col-5 col-md-4">
+                            <div class="icone-card text-center icon-warning mr-2 mb-1">
+                                <i class="bi bi-pencil-square"></i>
+                            </div>
+                        </div>
+                        <div class="col-7 col-md-8">
+                            <div class="numbers">
+                                <p class="titulo-card">Atendimentos no dia</p>
+                                <p class="subtitulo-card">0
+                                <p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer rodape-card">
+                    Módulo Atendimento
                 </div>
             </div>
         </div>

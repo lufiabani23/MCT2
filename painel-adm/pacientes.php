@@ -42,7 +42,103 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
   $sqlBuscarPacientes->execute();
   $listapacientes = $sqlBuscarPacientes->fetchALL();
 }
+?>
 
+<!-- MODAL DE NOVO PACIENTE -->
+<div class="modal novo-paciente fade" id="botaoNovoPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalNovoPaciente" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title ml-3" id="modalNovoPaciente">CADASTRO DE PACIENTE</h5>
+        <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img src="../img/logosistemapsico.png"></div>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="CadastroPaciente" method="POST" action="index.php?acao=pacientes">
+          <div class="form-row">
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="Nome">Nome Completo</label>
+              <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do paciente" required>
+            </div>
+
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="Telefone">Telefone</label>
+              <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do paciente" required>
+            </div>
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="Email">E-mail</label>
+              <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do paciente">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="CPF">CPF</label>
+              <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do paciente" required>
+            </div>
+
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="Convenio">Convênio</label>
+              <select id="Convenio" name="Convenio" class="form-control" required>
+                <option selected>Particular</option>
+                <?php
+                foreach ($listaconvenios as $indice => $linha) {
+                ?>
+                  <option><?php echo $linha['Nome']; ?></option>
+                <?php } ?>
+              </select>
+            </div>
+
+            <div class="form-group col-md-4 col-sm-12">
+              <label for="Nascimento">Data de Nascimento</label>
+              <input type="date" class="form-control" id="Nascimento" name="Nascimento" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6 col-sm-12">
+              <label for="Endereco">Endereço</label>
+              <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
+            </div>
+
+            <div class="form-group col-md-6 col-sm-12">
+              <label for="Genero">Gênero</label>
+              <select id="Genero" name="Genero" class="form-control" required>
+                <option>Masculino</option>
+                <option>Feminino</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-12 col-sm-12">
+              <label for="Prontuario">Prontuário</label>
+              <textarea id="Prontuario" class="form-control" name="Prontuario"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6 col-sm-12">
+              <label for="Foto">Foto <sub>(png, jpeg, jpg)</sub></label>
+              <input type="file" id="Foto" class="form-control" name="Foto">
+            </div>
+            <div class="form-group col-md-6 col-sm-12">
+              <label for="Anexos">Anexos</label>
+              <input type="file" id="Anexos" multiple="multiple" class="form-control" name="Anexos">
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button form="CadastroPaciente" type="submit" class="btn btn-success" name="btnNovoPaciente"><span style="font-size: 16pt;">+</span> Cadastrar</button>
+        <button form="CadastroPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item2 ?>">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<?php
 //INSERIR NOVO PACIENTE
 if (isset($_POST['btnNovoPaciente'])) {
   $nome = $_POST['Nome'];
@@ -291,101 +387,7 @@ if (@($_GET['funcao']) == "exclusao") {
   </div>
 </div>
 
-<!-- CAIXA MODAL DE NOVO PACIENTE -->
-<div class="modal fade" id="botaoNovoPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalNovoPaciente" aria-hidden="true">
-  <div class="modal-dialog modal-xl" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalNovoPaciente">Cadastrar novo paciente</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="CadastroPaciente" method="POST" action="index.php?acao=pacientes">
-          <div class="form-row">
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="Nome">Nome Completo</label>
-              <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do paciente" required>
-            </div>
 
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="Telefone">Telefone</label>
-              <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do paciente" required>
-            </div>
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="Email">E-mail</label>
-              <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do paciente">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="CPF">CPF</label>
-              <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do paciente" required>
-            </div>
-
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="Convenio">Convênio</label>
-              <select id="Convenio" name="Convenio" class="form-control" required>
-                <option selected>Particular</option>
-                <?php
-                foreach ($listaconvenios as $indice => $linha) {
-                ?>
-                  <option><?php echo $linha['Nome']; ?></option>
-                <?php } ?>
-              </select>
-            </div>
-
-            <div class="form-group col-md-4 col-sm-12">
-              <label for="Nascimento">Data de Nascimento</label>
-              <input type="date" class="form-control" id="Nascimento" name="Nascimento" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-md-6 col-sm-12">
-              <label for="Endereco">Endereço</label>
-              <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
-            </div>
-
-            <div class="form-group col-md-6 col-sm-12">
-              <label for="Genero">Gênero</label>
-              <select id="Genero" name="Genero" class="form-control" required>
-                <option>Masculino</option>
-                <option>Feminino</option>
-                <option>Outro</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-md-12 col-sm-12">
-              <label for="Prontuario">Prontuário</label>
-              <textarea id="Prontuario" class="form-control" name="Prontuario"></textarea>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-md-6 col-sm-12">
-              <label for="Foto">Foto <sub>(png, jpeg, jpg)</sub></label>
-              <input type="file" id="Foto" class="form-control" name="Foto">
-            </div>
-            <div class="form-group col-md-6 col-sm-12">
-              <label for="Anexos">Anexos</label>
-              <input type="file" id="Anexos" multiple="multiple" class="form-control" name="Anexos">
-            </div>
-          </div>
-
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button form="CadastroPaciente" type="submit" class="btn btn-success" name="btnNovoPaciente">Cadastrar Paciente</button>
-        <button form="CadastroPaciente" type="reset" class="btn btn-danger" name="<?php echo $item2 ?>">Limpar Dados</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- TABELA DE PACIENTE -->
 <!-- botão excluir leva o ID do paciente da linha -->
