@@ -135,7 +135,7 @@ div.novo-paciente .modal-body {
     margin-top: 1em;
 }
 
-div.novo-paciente img{
+div.novo-paciente img.logo-lateral{
     width: 6em;
     border-radius: 50%;
     box-shadow: 0px 2px 2px #005257;
