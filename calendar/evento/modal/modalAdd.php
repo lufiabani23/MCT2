@@ -10,7 +10,7 @@
 			  <div class="modal-body">
 				
 				  <div class="form-group">
-					<label for="titulo" class="col-sm-2 control-label">Titulo</label>
+					<label for="titulo" class="col-sm-2 control-label">Paciente</label>
 					<div class="col-sm-10">
 					  <input type="text" name="titulo" class="form-control" id="titulo" placeholder="Titulo" required>
 					</div>
