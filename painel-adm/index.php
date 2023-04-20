@@ -7,7 +7,7 @@ if (!isset($_SESSION['nome_psicologo'])) {
     header("location: ../index.php");
 };
 
-$pacientes = $conexao->prepare("SELECT * FROM paciente order by Nome asc");
+$pacientes = $conexao->prepare("SELECT * FROM paciente WHERE (Psicologo = $_SESSION[id_psicologo]) order by Nome asc");
 $pacientes->execute();
 $listapacientes = $pacientes->fetchALL();
 $_SESSION['totalPacientes'] = count($listapacientes);

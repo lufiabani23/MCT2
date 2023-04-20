@@ -360,13 +360,23 @@ if (@($_GET['funcao']) == "excluir") {
 // EXCLUSAO PACIENTE
 if (@($_GET['funcao']) == "exclusao") {
   $idexclusao = $_GET['id'];
-  $sql = $conexao->prepare("DELETE FROM paciente WHERE id = $idexclusao");
-  $sql->execute();
-  ?>
-  <?php
-  echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
+  $dataHoje = date_create()->format("Y-m-d H:i:s");
+  $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
+  $sqlBuscarAtendimentos->bindParam(":id", $idexclusao);
+  $sqlBuscarAtendimentos->bindParam(":dataHoje", $dataHoje);
+  $sqlBuscarAtendimentos -> execute();
+  $BuscarAtendimentos = $sqlBuscarAtendimentos -> fetchAll(PDO::FETCH_ASSOC);
+  if (count($BuscarAtendimentos) >= 1){
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
+  } elseif (count($BuscarAtendimentos) < 1) {
+    $sqlApagarAtendimentos = $conexao -> prepare ("DELETE FROM agendar WHERE paciente = $idexclusao");
+    $sqlApagarAtendimentos -> execute();
+    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = $idexclusao");
+    $sql->execute();
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   }
-?>
+  }
+  ?>
 
 
 <!-- BOTÃO DE NOVO PACIENTE E BOTÃO DE PESQUISA -->
