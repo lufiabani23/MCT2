@@ -6,8 +6,8 @@ body {
     max-width: 800px;
 }
 .col-centered{
-    float: none;
     margin: 0 auto;
+    margin-bottom: 70px;
 }
 .buttonAlign{
     margin-top: -34px;

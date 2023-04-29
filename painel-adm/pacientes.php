@@ -45,7 +45,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
 ?>
 
 <!-- MODAL DE NOVO PACIENTE -->
-<div class="modal fade novo-paciente" id="botaoNovoPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalNovoPaciente" aria-hidden="true">
+<div class="modal fade novo-paciente novo-modal" id="botaoNovoPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalNovoPaciente" aria-hidden="true">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -136,7 +136,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
       </div>
 
       <div class="modal-footer">
-        <button form="CadastroPaciente" type="submit" class="btn btn-success" name="btnNovoPaciente"><span style="font-size: 16pt;">+</span> Cadastrar</button>
+        <button form="CadastroPaciente" type="submit" class="btn btn-success" name="btnNovoPaciente">Cadastrar</button>
         <button form="CadastroPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item2 ?>">Cancelar</button>
       </div>
     </div>
