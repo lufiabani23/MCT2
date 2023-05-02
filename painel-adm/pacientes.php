@@ -58,7 +58,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
           <div class="form-row">
             <div class="form-group col-md-10 col-sm-12">
               <label for="Nome">Nome Completo</label>
-              <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do paciente" required>
+              <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do Paciente" required>
             </div>
 
             <div class="form-group col-md-2 col-sm-12">
@@ -91,26 +91,26 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
 
             <div class="form-group col-md-4 col-sm-12">
               <label for="CPF">CPF</label>
-              <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do paciente" required>
+              <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do Paciente" required>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-6 col-sm-12">
               <label for="Telefone">Telefone</label>
-              <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do paciente" required>
+              <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do Paciente" required>
             </div>
 
             <div class="form-group col-md-6 col-sm-12">
               <label for="Email">E-mail</label>
-              <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do paciente">
+              <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do Paciente">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-12 col-sm-12">
               <label for="Endereco">Endereço</label>
-              <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do paciente" class="form-control">
+              <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do Paciente" class="form-control">
             </div>
 
           </div>
@@ -121,7 +121,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
             </div>
             <div class="form-group col-md-8 col-sm-12">
               <label for="Prontuario">Prontuário</label>
-              <textarea id="Prontuario" class="form-control" name="Prontuario"></textarea>
+              <textarea id="Prontuario" class="form-control" name="Prontuario" placeholder="Prontuário do Paciente"></textarea>
             </div>
           </div>
 
@@ -379,6 +379,7 @@ if (@($_GET['funcao']) == "exclusao") {
   ?>
 
 
+
 <!-- BOTÃO DE NOVO PACIENTE E BOTÃO DE PESQUISA -->
 <div class="row mt-1"> <!-- botão alinhado a borda da tabela -->
 
@@ -388,8 +389,7 @@ if (@($_GET['funcao']) == "exclusao") {
     </button>
   </div>
 
-  <!-- Form para envio dos dados para pesquisa -->
-
+<!-- Form para envio dos dados para pesquisa -->
   <div class="col-md-6 col-sm-12">
     <div class="float-right">
       <form class="form-inline my-2 my-lg-0">

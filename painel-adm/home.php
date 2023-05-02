@@ -3,7 +3,7 @@
 ?>
 
 <div class="bemvindo d-none d-lg-block">
-    <h1>Seja bem vindo, <?php echo $_SESSION['nome_psicologo']; ?></h1>
+    <h1>Seja bem-vindo, <?php echo $_SESSION['nome_psicologo']; ?></h1>
 </div>
 
 <div class="area_cards">
