@@ -5,7 +5,4 @@ try {
 } catch (Exception $e)  {
     echo "Erro ao concetar com o banco de dados!" . $e;
 }
-
-
-
 ?>
