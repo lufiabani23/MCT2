@@ -113,8 +113,11 @@ table.lista-pacientes tr td a {
     color: white !important;
 }
 
+/* FORMATAÇÕES DA PÁGINA DE AGENDA */
 
-
+div.calendarioAgenda {
+    margin-bottom: 1em;
+}
 
 /*BOTÃO SECUNDARIO DO SISTEMA*/
 

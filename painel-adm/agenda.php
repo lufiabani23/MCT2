@@ -128,6 +128,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
 <link href='calendar/css/fullcalendar.css' rel='stylesheet' />
 <link href='calendar/css/fullcalendar.print.min.css' rel='stylesheet' media='print' />
 
+<div class="calendarioAgenda">
 <?php
 date_default_timezone_set('America/Sao_Paulo');
 $db = $conexao;
@@ -194,3 +195,4 @@ foreach ($events as $i => $linha) {
 <script src='calendar/js/fullcalendar.min.js'></script>
 <script src='calendar/locale/pt-br.js'></script>
 <?php include_once('calendar/calendario.php'); ?>
+</div>
