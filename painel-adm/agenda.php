@@ -1,4 +1,5 @@
 <?php
+include_once('../alerts.php');
 // ADICIONAR AGENDAMENTO
 if (isset($_POST['btnNovoAgendamento'])) {
   $nomePaciente = $_POST['NomePaciente'];
@@ -12,23 +13,22 @@ if (isset($_POST['btnNovoAgendamento'])) {
   $duracaoAgendamento = '+45 minutes';
   $dataAgendamentoInicio = date('Y-m-d H:i:s', strtotime($dataDia . ' ' . $horaAgendamento . ':' . $minutoAgendamento));
   $dataAgendamentoFim = date('Y-m-d H:i:s', strtotime($dataAgendamentoInicio . $duracaoAgendamento));
-  
+
   $sqlBuscaPaciente = $conexao->prepare("SELECT ID FROM paciente where (Nome = '$nomePaciente')");
   $sqlBuscaPaciente->execute();
   $idPaciente = $sqlBuscaPaciente->fetchAll(PDO::FETCH_ASSOC);
 
   if (empty($nomePaciente) or empty($dataDia) or empty($horaAgendamento) or empty($minutoAgendamento)) {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
-    echo "<script language='javascript'> window.location='index.php?acao=$item3'; </script>";
+    echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=danger'; </script>";
   } else {
     try {
       $sql = $conexao->prepare("INSERT INTO agendar VALUES (?,?,null,?,?,?,?,?)");
       $sql->execute(array(
         $_SESSION['id_psicologo'], $idPaciente[0]['ID'], $dataAgendamentoInicio, $dataAgendamentoFim, $motivoAgendamento, $obsAgendamento, $valorAgendamento
       ));
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
     } catch (Exception $e) {
-
     }
   }
 }
@@ -36,9 +36,9 @@ if (isset($_POST['btnNovoAgendamento'])) {
 
 <!-- BOTÃO DE NOVO AGENDAMENTO -->
 <div class="col-md-6 col-sm-12">
-    <button type="button" class="btn btn-secondary novo-agendamento" data-toggle="modal" data-target="#botaoNovoAgendamento">
-      <span style="font-size: 16pt;">+</span> Novo agendamento
-    </button>
+  <button type="button" class="btn btn-secondary novo-agendamento" data-toggle="modal" data-target="#botaoNovoAgendamento">
+    <span style="font-size: 16pt;">+</span> Novo agendamento
+  </button>
 </div>
 
 <!-- MODAL DE NOVO AGENDAMENTO -->
@@ -59,9 +59,10 @@ if (isset($_POST['btnNovoAgendamento'])) {
               <select class="form-control" id="NomePaciente" name="NomePaciente">
                 <option>--Selecione--</option>
                 <?php
-                  foreach ($listapacientes as $indice => $linha) {
-                    echo "<option>". $linha['Nome'];"</option>";
-                  }; ?>
+                foreach ($listapacientes as $indice => $linha) {
+                  echo "<option>" . $linha['Nome'];
+                  "</option>";
+                }; ?>
               </select>
             </div>
             <div class="form-group col-md-3 col-sm-12">
@@ -74,7 +75,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
             <div class="form-group col-md-2">
               <label for="HoraAgendamento">Horas</label>
               <select id="HoraAgendamento" name="HoraAgendamento" class="form-control">
-                <?php for ($i = 00; $i<=23 ; $i++) {
+                <?php for ($i = 00; $i <= 23; $i++) {
                   echo "<option>$i</option>";
                 }; ?>
               </select>
@@ -82,7 +83,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
             <div class="form-group col-md-2">
               <label for="MinutoAgendamento">Minutos</label>
               <select id="MinutoAgendamento" class="form-control" name="MinutoAgendamento">
-                <?php for ($i = 00; $i<=59 ; $i+=5) {
+                <?php for ($i = 00; $i <= 59; $i += 5) {
                   echo "<option>$i</option>";
                 }; ?>
               </select>
@@ -98,10 +99,10 @@ if (isset($_POST['btnNovoAgendamento'])) {
             <div class="form-group col-md-4">
               <label for="ValorAgendamento">Valor</label>
               <div class="input-group">
-              <div class="input-group-prepend">
-              <div class="input-group-text">R$</div>
-              <input type="number" id="ValorAgendamento" name="ValorAgendamento" class="form-control" placeholder="Valor do Atendimento">
-              </div>
+                <div class="input-group-prepend">
+                  <div class="input-group-text">R$</div>
+                  <input type="number" id="ValorAgendamento" name="ValorAgendamento" class="form-control" placeholder="Valor do Atendimento">
+                </div>
               </div>
             </div>
             <div class="form-group col-md-8">
@@ -128,78 +129,68 @@ if (isset($_POST['btnNovoAgendamento'])) {
 <link href='calendar/css/fullcalendar.print.min.css' rel='stylesheet' media='print' />
 
 <?php
-require_once('calendar/evento/action/conexao.php');
 date_default_timezone_set('America/Sao_Paulo');
-
-$database = new Database();
-$db = $database->conectar();
+$db = $conexao;
 
 // BUSCA OS EVENTOS CADASTRADOS
-$sql = "SELECT ID, Paciente, Motivo, Data_Inicio, Data_Fim FROM agendar
-Where Psicologo = $_SESSION[id_psicologo]";
+$sql = "SELECT ID, Paciente, Motivo, Data_Inicio, Data_Fim FROM agendar WHERE Psicologo = {$_SESSION['id_psicologo']}";
 $req = $db->prepare($sql);
 $req->execute();
 $events = $req->fetchAll();
 
 // CONVERTE O ID DO PACIENTE PARA O NOME DELE
 foreach ($events as $i => $linha) {
-	$sqlPaciente = $db -> prepare("SELECT Nome FROM paciente where (ID = $linha[Paciente])");
-	$sqlPaciente -> execute();
-	$nomePaciente = $sqlPaciente ->fetchAll();
-	$events[$i]["Paciente"] = $nomePaciente[0][0];
+  $sqlPaciente = $db->prepare("SELECT Nome FROM paciente WHERE ID = {$linha['Paciente']}");
+  $sqlPaciente->execute();
+  $nomePaciente = $sqlPaciente->fetchAll();
+  $events[$i]["Paciente"] = $nomePaciente[0][0];
 }
 ?>
 
 <!-- Page Content -->
 <div class="container">
-	<div class="row">
-		<div class="col-lg-12 text-center">
-			<p class="lead"></p>
-			<div id="calendar" class="col-centered">
-			</div>
-		</div>
-	</div>
-	<!-- /.row -->
+  <div class="row">
+    <div class="col-lg-12 text-center">
+      <p class="lead"></p>
+      <div id="calendar" class="col-centered">
+      </div>
+    </div>
+  </div>
+  <!-- /.row -->
 
-	<!-- Valida data dos Modals -->
-	<script type="text/javascript">
-		function validaForm(erro) {
-			if (erro.inicio.value > erro.termino.value) {
-				alert('Data de Inicio deve ser menor ou igual a de termino.');
-				return false;
-			} else if (erro.inicio.value == erro.termino.value) {
-				alert('Defina um horario de inicio e termino.(24h)');
-				return false;
-			}
-		}
-	</script>
-
-
-	<!-- Modal Adicionar Evento -->
-	<?php include('calendar/evento/modal/modalAdd.php'); ?>
+  <!-- Valida data dos Modals -->
+  <script type="text/javascript">
+    function validaForm(erro) {
+      if (erro.inicio.value > erro.termino.value) {
+        alert('Data de Inicio deve ser menor ou igual a de termino.');
+        return false;
+      } else if (erro.inicio.value == erro.termino.value) {
+        alert('Defina um horario de inicio e termino.(24h)');
+        return false;
+      }
+    }
+  </script>
 
 
-	<!-- Modal Editar/Mostrar/Deletar Evento -->
-	<?php include('calendar/evento/modal/modalEdit.php'); ?>
+  <!-- Modal Adicionar Evento -->
+  <?php include('calendar/evento/modal/modalAdd.php'); ?>
+
+
+  <!-- Modal Editar/Mostrar/Deletar Evento -->
+  <?php include('calendar/evento/modal/modalEdit.php'); ?>
 
 </div>
 
-<!-- jQuery Version 1.11.1 -->
-<script src="calendar/js/jquery.js"></script>
+<!-- jQuery Version 3.6.0 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Bootstrap Core JavaScript -->
-<script src="calendar/js/bootstrap.min.js"></script>
+<!-- Bootstrap Core JavaScript NÃO ABRE O MENU -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-
 
 <!-- FullCalendar -->
 <script src='calendar/js/moment.min.js'></script>
 <script src='calendar/js/fullcalendar.min.js'></script>
 <script src='calendar/locale/pt-br.js'></script>
-<?php include('calendar/calendario.php'); ?>
-
+<?php include_once('calendar/calendario.php'); ?>

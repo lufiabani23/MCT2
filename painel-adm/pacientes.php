@@ -2,29 +2,12 @@
 <script src="../js/mascaras.js"></script>
 
 <?php
-include_once('../conexao.php');
+require_once('../conexao.php');
+include_once('../alerts.php');
 @session_start();
 
-// ALERTS
-if (@($_GET['alert']) == "success") { ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-  <strong>Sucesso!</strong> Operação realizada com sucesso.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  </div>
-  <?php }
-  elseif (@($_GET['alert']) == "danger") { ?>
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-  <strong>Erro!</strong> A operação não foi realizada.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-  </div>
-<?php }
 
-
-//O convenio com nome "Particular" é cadastrado automaticamente
+//O convenio com nome "Particular" é cadastrado automaticamente em AUTENTICAR.PHP
 
 // Buscar por Convenios Cadastrados
 $sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[id_psicologo] and Nome != 'Particular')");
@@ -181,7 +164,7 @@ if (@($_GET['funcao']) == "editar") {
 
   $sqlEditarPaciente =  $conexao->query("SELECT * from Paciente where(ID = $idEditarPaciente)");
   $dadosEditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
-  ?>
+?>
   <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog" aria-labelledby="#modalEditar" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
@@ -279,7 +262,7 @@ if (@($_GET['funcao']) == "editar") {
   <script>
     $("#modalEditar").modal("show");
   </script>
-  <?php }
+<?php }
 
 // EDITAR PACIENTE
 if (isset($_POST['btnEditarPaciente'])) {
@@ -364,19 +347,21 @@ if (@($_GET['funcao']) == "exclusao") {
   $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
   $sqlBuscarAtendimentos->bindParam(":id", $idexclusao);
   $sqlBuscarAtendimentos->bindParam(":dataHoje", $dataHoje);
-  $sqlBuscarAtendimentos -> execute();
-  $BuscarAtendimentos = $sqlBuscarAtendimentos -> fetchAll(PDO::FETCH_ASSOC);
-  if (count($BuscarAtendimentos) >= 1){
+  $sqlBuscarAtendimentos->execute();
+  $BuscarAtendimentos = $sqlBuscarAtendimentos->fetchAll(PDO::FETCH_ASSOC);
+  if (count($BuscarAtendimentos) >= 1) {
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
   } elseif (count($BuscarAtendimentos) < 1) {
-    $sqlApagarAtendimentos = $conexao -> prepare ("DELETE FROM agendar WHERE paciente = $idexclusao");
-    $sqlApagarAtendimentos -> execute();
-    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = $idexclusao");
+    $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
+    $sqlApagarAtendimentos->bindParam(":id", $idexclusao);
+    $sqlApagarAtendimentos->execute();
+    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
+    $sql->bindParam(":id", $idexclusao);
     $sql->execute();
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   }
-  }
-  ?>
+}
+?>
 
 
 
@@ -389,7 +374,7 @@ if (@($_GET['funcao']) == "exclusao") {
     </button>
   </div>
 
-<!-- Form para envio dos dados para pesquisa -->
+  <!-- Form para envio dos dados para pesquisa -->
   <div class="col-md-6 col-sm-12">
     <div class="float-right">
       <form class="form-inline my-2 my-lg-0">

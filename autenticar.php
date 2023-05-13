@@ -26,6 +26,7 @@ if ($linhas > 0 and $linhas < 2) {
     $_SESSION['id_psicologo'] = $dados[0]['ID'];
     $_SESSION['nome_psicologo'] = $dados[0]['Nome'];
     $_SESSION['CRP_psicologo'] = $dados[0]['CRP'];
+    
     //Verificação do convenio "Particular"
     $sqlConvenioParticular = $conexao->prepare("SELECT * FROM convenios WHERE (Psicologo = $_SESSION[id_psicologo] and Nome = 'Particular')");
     $sqlConvenioParticular->execute();

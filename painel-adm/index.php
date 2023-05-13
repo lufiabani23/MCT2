@@ -7,10 +7,11 @@ if (!isset($_SESSION['nome_psicologo'])) {
     header("location: ../index.php");
 };
 
+// Busca dos pacientes
 $pacientes = $conexao->prepare("SELECT * FROM paciente WHERE (Psicologo = $_SESSION[id_psicologo]) order by Nome asc");
 $pacientes->execute();
 $listapacientes = $pacientes->fetchALL();
-$_SESSION['totalPacientes'] = count($listapacientes);
+$_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
 
 //ITENS DO MENU E DAS PAGINAS
 
@@ -42,14 +43,10 @@ elseif (@$_GET['acao'] == $suporte)
 else
     $item1ativo = 'active';
 
-
-if ($_SESSION['nome_psicologo'] == "") {
-    header('location:../index.php');
-}
 ?>
 
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <source lang="php">
 
 <head>
@@ -146,14 +143,3 @@ if ($_SESSION['nome_psicologo'] == "") {
 </body>
 
 </html>
-
-
-<?php
-
-if (isset($_GET['btnbuscarPacientes'])) { ?>
-
-    <script type="text/javascript">
-        $('#link-pacientes').click();
-    </script>
-
-<?php } ?>
