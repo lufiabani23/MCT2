@@ -32,7 +32,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title ml-3" id="modalNovoPaciente">CADASTRO DE PACIENTE</h5>
+        <h5 class="modal-title" id="modalNovoPaciente">CADASTRO DE PACIENTE</h5>
         <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png"></div>
         </button>
       </div>
