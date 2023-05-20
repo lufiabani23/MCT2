@@ -18,7 +18,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
   $sqlBuscaPaciente->execute();
   $idPaciente = $sqlBuscaPaciente->fetchAll(PDO::FETCH_ASSOC);
 
-  if (empty($nomePaciente) or empty($dataDia) or empty($horaAgendamento) or empty($minutoAgendamento)) {
+  if (empty($nomePaciente) or empty($dataDia) or !isset($horaAgendamento) or $horaAgendamento ==="" or !isset($minutoAgendamento) or $minutoAgendamento === "") {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
     echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=danger'; </script>";
   } else {
