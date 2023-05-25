@@ -121,13 +121,13 @@ div.calendarioAgenda {
 
 /*BOTÃO SECUNDARIO DO SISTEMA*/
 
-button.btn-secondary {
+.btn-secondary {
     background-color: #005257 !important;
     border: none;
     color: white;
 }
 
-button.btn-secondary:hover {
+.btn-secondary:hover {
     background-color:#00c2cb !important;
     color: white;
 }
@@ -138,7 +138,7 @@ div.novo-modal .modal-body {
     margin-top: 1em;
 }
 
-div.novo-paciente img.logo-lateral{
+div.modal-paciente img.logo-lateral{
     width: 6em;
     border-radius: 50%;
     box-shadow: 0px 2px 2px #005257;
