@@ -30,7 +30,7 @@ if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
 <?php
 //INSERIR NOVO PACIENTE
 if (isset($_POST['btnNovoPaciente'])) {
-  
+
   $nome = $_POST['Nome'];
   $telefone = $_POST['Telefone'];
   $email = $_POST['Email'];
@@ -41,14 +41,39 @@ if (isset($_POST['btnNovoPaciente'])) {
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
 
+  if ($_FILES['Foto']['name']) {
+    // Obter informações sobre o arquivo de foto
+    $fotoNome = $_FILES['Foto']['name'];
+    $fotoTmp = $_FILES['Foto']['tmp_name'];
+    $fotoTamanho = $_FILES['Foto']['size'];
+    $fotoErro = $_FILES['Foto']['error'];
+
+    // Verificar se não houve erros no upload da foto
+    if ($fotoErro === UPLOAD_ERR_OK) {
+      // Definir o diretório de destino para salvar a foto
+      $diretorioDestino = 'fotosPacientes/';
+
+      // Gerar um nome único para a foto (pode ser o ID do paciente, por exemplo)
+      $nomeFoto = uniqid('paciente_') . '.' . pathinfo($fotoNome, PATHINFO_EXTENSION);
+
+      // Mover o arquivo temporário para o diretório de destino com o nome único
+      if (move_uploaded_file($fotoTmp, $diretorioDestino . $nomeFoto)) {
+        // Endereço da foto para armazenar no banco de dados
+        $enderecoFoto = $diretorioDestino . $nomeFoto;
+      }
+    }
+  } else {
+    $enderecoFoto = null;
+  }
+
   if (empty($nome) or empty($telefone) or empty($nascimento) or empty($convenio) or empty($CPF)) {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
     echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";
   } else {
     try {
-      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,null,?,?,?,?,null,?)");
+      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,?,?,?,?,?,null,?)");
       $sql->execute(array(
-        $nome, $telefone, $email, $nascimento, $convenio, $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
+        $nome, $telefone, $email, $nascimento, $convenio, $enderecoFoto, $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
       ));
       echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
@@ -70,6 +95,37 @@ if (isset($_POST['btnEditarPaciente'])) {
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
 
+  if ($_FILES['Foto']['name']) {
+    $sqlFotoAntiga = $conexao->prepare("SELECT * FROM paciente WHERE ID = :idEditarPaciente");
+    $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
+    $sqlFotoAntiga->execute();
+    $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
+    unlink($resultadoFotoAntiga["Foto"]);
+
+    // Obter informações sobre o arquivo de foto
+    $fotoNome = $_FILES['Foto']['name'];
+    $fotoTmp = $_FILES['Foto']['tmp_name'];
+    $fotoTamanho = $_FILES['Foto']['size'];
+    $fotoErro = $_FILES['Foto']['error'];
+
+    // Verificar se não houve erros no upload da foto
+    if ($fotoErro === UPLOAD_ERR_OK) {
+      // Definir o diretório de destino para salvar a foto
+      $diretorioDestino = 'fotosPacientes/';
+
+      // Gerar um nome único para a foto (pode ser o ID do paciente, por exemplo)
+      $nomeFoto = uniqid('paciente_') . '.' . pathinfo($fotoNome, PATHINFO_EXTENSION);
+
+      // Mover o arquivo temporário para o diretório de destino com o nome único
+      if (move_uploaded_file($fotoTmp, $diretorioDestino . $nomeFoto)) {
+        // Endereço da foto para armazenar no banco de dados
+        $enderecoFoto = $diretorioDestino . $nomeFoto;
+      }
+    }
+  } else {
+    $enderecoFoto = null;
+  }
+
   try {
     $sqlEditarPaciente = $conexao->prepare("UPDATE paciente SET
     Nome = :nome,
@@ -78,6 +134,7 @@ if (isset($_POST['btnEditarPaciente'])) {
     Data_Nascimento = :nascimento,
     Genero = :genero,
     Convenio = :convenio,
+    Foto = :foto,
     CPF = :cpf,
     Prontuario = :prontuario,
     Endereco = :endereco
@@ -91,6 +148,7 @@ if (isset($_POST['btnEditarPaciente'])) {
         ':nascimento' => $nascimento,
         ':genero' => $genero,
         ':convenio' => $convenio,
+        ':foto' => $enderecoFoto,
         ':cpf' => $CPF,
         ':prontuario' => $prontuario,
         ':endereco' => $endereco,
@@ -123,7 +181,9 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
           </button>
         </div>
         <div class="modal-body">
-          <form id="formModalPaciente" method="POST" action="index.php?acao=pacientes<?php if (isset($idEditarPaciente)) { echo "&id=$idEditarPaciente"; }?>">
+          <form id="formModalPaciente" enctype="multipart/form-data" method="POST" action="index.php?acao=pacientes<?php if (isset($idEditarPaciente)) {
+                                                                                                                      echo "&id=$idEditarPaciente";
+                                                                                                                    } ?>">
             <div class="form-row">
               <div class="form-group col-md-10 col-sm-12">
                 <label for="Nome">Nome Completo</label>
@@ -154,8 +214,8 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Nascimento">Data de Nascimento</label>
                 <input type="date" class="form-control" id="Nascimento" name="Nascimento" value="<?php if (isset($dadosEditarPaciente[0]["Data_Nascimento"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Data_Nascimento"];
-                                                                                                                    } ?>" required>
+                                                                                                    echo $dadosEditarPaciente[0]["Data_Nascimento"];
+                                                                                                  } ?>" required>
               </div>
 
               <div class="form-group col-md-4 col-sm-12">
@@ -176,8 +236,8 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               <div class="form-group col-md-4 col-sm-12">
                 <label for="CPF">CPF</label>
                 <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["CPF"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["CPF"];
-                                                                                                                    } ?>" required>
+                                                                                                                    echo $dadosEditarPaciente[0]["CPF"];
+                                                                                                                  } ?>" required>
               </div>
             </div>
 
@@ -185,15 +245,15 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Telefone">Telefone</label>
                 <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Telefone"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Telefone"];
-                                                                                                                    } ?>" required>
+                                                                                                                                  echo $dadosEditarPaciente[0]["Telefone"];
+                                                                                                                                } ?>" required>
               </div>
 
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Email">E-mail</label>
                 <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Email"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Email"];
-                                                                                                                    } ?>">
+                                                                                                                            echo $dadosEditarPaciente[0]["Email"];
+                                                                                                                          } ?>">
               </div>
             </div>
 
@@ -201,21 +261,27 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               <div class="form-group col-md-12 col-sm-12">
                 <label for="Endereco">Endereço</label>
                 <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do Paciente" class="form-control" value="<?php if (isset($dadosEditarPaciente[0]["Endereco"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Endereco"];
-                                                                                                                    } ?>">
+                                                                                                                                  echo $dadosEditarPaciente[0]["Endereco"];
+                                                                                                                                } ?>">
               </div>
 
             </div>
             <div class="form-row">
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Foto">Foto <sub>(png, jpeg, jpg)</sub></label>
-                <input type="file" id="Foto" class="form-control" name="Foto">
+                <input type="file" id="Foto" class="form-control" name="Foto" enctype="multipart/form-data">
+                <?php
+                if (isset($dadosEditarPaciente[0]["Foto"])) {
+                  echo '<label>Foto Atual:</label>';
+                  echo '<img src="' . $dadosEditarPaciente[0]["Foto"] . '" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2">';
+                }
+                ?>
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" name="Prontuario" placeholder="Prontuário do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Prontuario"];
-                                                                                                                    } ?>"></textarea>
+                <textarea id="Prontuario" class="form-control" rows="7"  name="Prontuario" placeholder="Prontuário do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
+                                                                                                                                echo $dadosEditarPaciente[0]["Prontuario"];
+                                                                                                                              } ?>"></textarea>
               </div>
             </div>
 
