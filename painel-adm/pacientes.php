@@ -41,7 +41,7 @@ if (isset($_POST['btnNovoPaciente'])) {
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
 
-  if ($_FILES['Foto']['name']) {
+  if (!empty($_FILES['Foto']['name'])) {
     // Obter informações sobre o arquivo de foto
     $fotoNome = $_FILES['Foto']['name'];
     $fotoTmp = $_FILES['Foto']['tmp_name'];
@@ -51,7 +51,7 @@ if (isset($_POST['btnNovoPaciente'])) {
     // Verificar se não houve erros no upload da foto
     if ($fotoErro === UPLOAD_ERR_OK) {
       // Definir o diretório de destino para salvar a foto
-      $diretorioDestino = 'fotosPacientes/';
+      $diretorioDestino = './fotosPacientes/';
 
       // Gerar um nome único para a foto (pode ser o ID do paciente, por exemplo)
       $nomeFoto = uniqid('paciente_') . '.' . pathinfo($fotoNome, PATHINFO_EXTENSION);
@@ -77,7 +77,6 @@ if (isset($_POST['btnNovoPaciente'])) {
       ));
       echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=danger'; </script>";
     }
   }
 }
@@ -94,13 +93,18 @@ if (isset($_POST['btnEditarPaciente'])) {
   $CPF = $_POST['CPF'];
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
+  if (isset($_POST['enderecoFoto'])) { $enderecoFoto = $_POST['enderecoFoto']; } else {$enderecoFoto = null; } // Verifica se tem uma foto antiga no hidden
+  if (isset($_POST['apagarFoto'])) { $apagarFoto = 1; } else {$apagarFoto = 0;} // Verifica se foi marcada a opção Apagar Foto
 
-  if ($_FILES['Foto']['name']) {
-    $sqlFotoAntiga = $conexao->prepare("SELECT * FROM paciente WHERE ID = :idEditarPaciente");
+  // Verifica se foi anexado algum arquivo no campo foto
+  if (!empty($_FILES['Foto']['name'])) {
+    $sqlFotoAntiga = $conexao->prepare("SELECT Foto FROM paciente WHERE ID = :idEditarPaciente");
     $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
     $sqlFotoAntiga->execute();
     $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
-    unlink($resultadoFotoAntiga["Foto"]);
+    if (($resultadoFotoAntiga["Foto"]) <> null){
+      unlink($resultadoFotoAntiga["Foto"]);
+    };
 
     // Obter informações sobre o arquivo de foto
     $fotoNome = $_FILES['Foto']['name'];
@@ -122,7 +126,14 @@ if (isset($_POST['btnEditarPaciente'])) {
         $enderecoFoto = $diretorioDestino . $nomeFoto;
       }
     }
-  } else {
+  } elseif ($apagarFoto == 1) {
+    $sqlFotoAntiga = $conexao->prepare("SELECT Foto FROM paciente WHERE ID = :idEditarPaciente");
+    $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
+    $sqlFotoAntiga->execute();
+    $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
+    if (($resultadoFotoAntiga["Foto"]) <> null){
+      unlink($resultadoFotoAntiga["Foto"]);
+    };
     $enderecoFoto = null;
   }
 
@@ -271,9 +282,11 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                 <label for="Foto">Foto <sub>(png, jpeg, jpg)</sub></label>
                 <input type="file" id="Foto" class="form-control" name="Foto" enctype="multipart/form-data">
                 <?php
-                if (isset($dadosEditarPaciente[0]["Foto"])) {
-                  echo '<label>Foto Atual:</label>';
-                  echo '<img src="' . $dadosEditarPaciente[0]["Foto"] . '" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2">';
+                if (isset($dadosEditarPaciente[0]["Foto"])) { ?>
+                  <input type="hidden" value="<?php echo $dadosEditarPaciente[0]["Foto"]; ?>" name="enderecoFoto">
+                  <label>Foto Atual:</label>
+                  <img src="<?php echo $dadosEditarPaciente[0]["Foto"] ?>" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2">
+                  <br> <input class="" type="checkbox" id="ApagarFoto" name="apagarFoto"> <label for="apagarFoto">Deletar foto</label> <?php
                 }
                 ?>
               </div>
@@ -343,6 +356,7 @@ if (@($_GET['funcao']) == "excluir") {
 // EXCLUSAO PACIENTE
 if (@($_GET['funcao']) == "exclusao") {
   $idexclusao = $_GET['id'];
+  // Procura atendimentos futuros do paciente
   $dataHoje = date_create()->format("Y-m-d H:i:s");
   $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
   $sqlBuscarAtendimentos->bindParam(":id", $idexclusao);
@@ -352,9 +366,17 @@ if (@($_GET['funcao']) == "exclusao") {
   if (count($BuscarAtendimentos) >= 1) {
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
   } elseif (count($BuscarAtendimentos) < 1) {
+    // Apaga atendimentos passados
     $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
     $sqlApagarAtendimentos->bindParam(":id", $idexclusao);
     $sqlApagarAtendimentos->execute();
+    // Busca a foto do paciente para apagar
+    $sqlBuscarFoto = $conexao -> prepare("SELECT Foto FROM Paciente where ID = :id");
+    $sqlBuscarFoto -> bindParam(":id", $idexclusao);
+    $sqlBuscarFoto -> execute();
+    $fotoPaciente = $sqlBuscarFoto -> fetch(PDO::FETCH_ASSOC);
+    if (isset($fotoPaciente[0])) {unlink($fotoPaciente[0]);}
+    //Apaga Paciente
     $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
     $sql->bindParam(":id", $idexclusao);
     $sql->execute();
