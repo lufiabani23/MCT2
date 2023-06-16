@@ -75,8 +75,36 @@ if (isset($_POST['btnNovoPaciente'])) {
       $sql->execute(array(
         $nome, $telefone, $email, $nascimento, $convenio, $enderecoFoto, $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
       ));
+      if (!empty($_FILES['Anexos']['name'])) {
+        $anexos = $_FILES['Anexos'];
+        $pacienteId = $conexao->lastInsertId();
+        foreach ($anexos['tmp_name'] as $index => $tmp) {
+          $anexoNome = $anexos['name'][$index];
+          $anexoErro = $anexos['error'][$index];
+
+          // Verificar se não houve erros no upload do anexo
+          if ($anexoErro === UPLOAD_ERR_OK) {
+            // Definir o diretório de destino para salvar o anexo
+            $diretorioDestino = './anexosPacientes/';
+
+            // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
+            $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+
+            // Mover o arquivo temporário para o diretório de destino com o nome único
+            if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
+              // Endereço do anexo para armazenar no banco de dados
+              $enderecoAnexo = $diretorioDestino . $nomeAnexo;
+
+              // Inserir o anexo no banco de dados (dentro do loop)
+              $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
+              $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
+            }
+          }
+        }
+      }
       echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
+      echo $e;
     }
   }
 }
@@ -93,8 +121,16 @@ if (isset($_POST['btnEditarPaciente'])) {
   $CPF = $_POST['CPF'];
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
-  if (isset($_POST['enderecoFoto'])) { $enderecoFoto = $_POST['enderecoFoto']; } else {$enderecoFoto = null; } // Verifica se tem uma foto antiga no hidden
-  if (isset($_POST['apagarFoto'])) { $apagarFoto = 1; } else {$apagarFoto = 0;} // Verifica se foi marcada a opção Apagar Foto
+  if (isset($_POST['enderecoFoto'])) {
+    $enderecoFoto = $_POST['enderecoFoto'];
+  } else {
+    $enderecoFoto = null;
+  } // Verifica se tem uma foto antiga no hidden
+  if (isset($_POST['apagarFoto'])) {
+    $apagarFoto = 1;
+  } else {
+    $apagarFoto = 0;
+  } // Verifica se foi marcada a opção Apagar Foto
 
   // Verifica se foi anexado algum arquivo no campo foto
   if (!empty($_FILES['Foto']['name'])) {
@@ -102,7 +138,7 @@ if (isset($_POST['btnEditarPaciente'])) {
     $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
     $sqlFotoAntiga->execute();
     $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
-    if (($resultadoFotoAntiga["Foto"]) <> null){
+    if (($resultadoFotoAntiga["Foto"]) <> null) {
       unlink($resultadoFotoAntiga["Foto"]);
     };
 
@@ -131,7 +167,7 @@ if (isset($_POST['btnEditarPaciente'])) {
     $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
     $sqlFotoAntiga->execute();
     $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
-    if (($resultadoFotoAntiga["Foto"]) <> null){
+    if (($resultadoFotoAntiga["Foto"]) <> null) {
       unlink($resultadoFotoAntiga["Foto"]);
     };
     $enderecoFoto = null;
@@ -180,9 +216,14 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
     $idEditarPaciente = $_GET['id'];
     $sqlEditarPaciente =  $conexao->query("SELECT * from Paciente where(ID = $idEditarPaciente)");
     $dadosEditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
+    //Busca anexos do paciente para listar
+    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
+    $sqlBuscarAnexos->bindParam(":id", $idEditarPaciente);
+    $sqlBuscarAnexos->execute();
+    $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
   };
 ?>
-  <!-- MODAL DE NOVO PACIENTE -->
+  <!-- MODAL DE PACIENTE -->
   <div class="modal fade modal-paciente novo-modal" id="modalPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalPaciente" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
@@ -285,23 +326,40 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                 if (isset($dadosEditarPaciente[0]["Foto"])) { ?>
                   <input type="hidden" value="<?php echo $dadosEditarPaciente[0]["Foto"]; ?>" name="enderecoFoto">
                   <label>Foto Atual:</label>
-                  <img src="<?php echo $dadosEditarPaciente[0]["Foto"] ?>" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2">
-                  <br> <input class="" type="checkbox" id="ApagarFoto" name="apagarFoto"> <label for="apagarFoto">Deletar foto</label> <?php
-                }
-                ?>
+                  <img src="<?php echo $dadosEditarPaciente[0]["Foto"] ?>" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2 img-thumbnail">
+                  <br> <input class="" type="checkbox" id="apagarFoto" name="apagarFoto"> <label for="apagarFoto">Deletar foto</label> <?php
+                                                                                                                                      }
+                                                                                                                                        ?>
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" rows="7"  name="Prontuario" placeholder="Prontuário do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
-                                                                                                                                echo $dadosEditarPaciente[0]["Prontuario"];
-                                                                                                                              } ?>"></textarea>
+                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
+                                                                                                                                        echo $dadosEditarPaciente[0]["Prontuario"];
+                                                                                                                                      } ?>"></textarea>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-md-12 col-sm-12">
                 <label for="Anexos">Anexos</label>
-                <input type="file" id="Anexos" multiple="multiple" class="form-control" name="Anexos">
+                <input type="file" id="Anexos" multiple="multiple" class="form-control" name="Anexos[]">
+                <?php
+                if (!empty($anexosPaciente)) { ?>
+                  <table class="table table-estriped">
+                    <tr>
+                      <th scope="col">Nome</th>
+                      <th scope="col">Ação</th>
+                    </tr>
+                    <?php foreach ($anexosPaciente as $indice => $linha) { ?>
+                      <tr>
+                        <td scope="row"><?php echo ($linha['Nome']); ?> </td>
+                        <td scope="row"><input class="" type="checkbox" id="apagarAnexo<?php echo $linha['ID'] ?>" name="apagarAnexo<?php echo $linha['ID'] ?>"> <label for="apagarAnexo<?php echo $linha['ID'] ?>">Deletar foto</label></td>
+                      </tr>
+                    <?php }
+                    ?>
+                  </table>
+                  <input type="hidden" value="<?php echo $dadosEditarPaciente[0]["Foto"]; ?>" name="enderecoFoto">
+                <?php } ?>
               </div>
             </div>
           </form>
@@ -341,7 +399,7 @@ if (@($_GET['funcao']) == "excluir") {
           Você deseja realmente excluir este paciente?
         </div>
         <div class="modal-footer">
-          <a href="index.php?acao=pacientes" type="button" class="btn btn-secondary">Cancelar</a>
+          <a href="index.php?acao=pacientes" type="button" class="btn btn-dark">Cancelar</a>
           <a class="btn btn-danger" href="index.php?acao=pacientes&funcao=exclusao&id=<?php echo $idexclusao; ?>">Excluir</a>
         </div>
       </div>
@@ -370,18 +428,35 @@ if (@($_GET['funcao']) == "exclusao") {
     $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
     $sqlApagarAtendimentos->bindParam(":id", $idexclusao);
     $sqlApagarAtendimentos->execute();
-    // Busca a foto do paciente para apagar
-    $sqlBuscarFoto = $conexao -> prepare("SELECT Foto FROM Paciente where ID = :id");
-    $sqlBuscarFoto -> bindParam(":id", $idexclusao);
-    $sqlBuscarFoto -> execute();
-    $fotoPaciente = $sqlBuscarFoto -> fetch(PDO::FETCH_ASSOC);
-    if (isset($fotoPaciente[0])) {unlink($fotoPaciente[0]);}
-    //Apaga Paciente
-    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
-    $sql->bindParam(":id", $idexclusao);
-    $sql->execute();
-    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   }
+
+  // Busca a foto do paciente para apagar
+  $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM Paciente where ID = :id");
+  $sqlBuscarFoto->bindParam(":id", $idexclusao);
+  $sqlBuscarFoto->execute();
+  $fotoPaciente = $sqlBuscarFoto->fetchAll(PDO::FETCH_ASSOC);
+  if (isset($fotoPaciente[0]['Foto'])) {
+    unlink($fotoPaciente[0]['Foto']);
+  }
+
+  //Busca anexos do paciente para apagar
+  $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
+  $sqlBuscarAnexos->bindParam(":id", $idexclusao);
+  $sqlBuscarAnexos->execute();
+  $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
+  if (!empty($anexosPaciente)) {
+    foreach ($anexosPaciente as $indice => $linha) {
+      unlink($linha['Anexo']);
+    }
+    $sqlApagarAnexo = $conexao->prepare("DELETE FROM Anexos where Paciente = :id");
+    $sqlApagarAnexo->bindParam(":id", $idexclusao);
+    $sqlApagarAnexo->execute();
+  }
+  //Apaga Paciente
+  $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
+  $sql->bindParam(":id", $idexclusao);
+  $sql->execute();
+  echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
 }
 ?>
 
@@ -390,7 +465,7 @@ if (@($_GET['funcao']) == "exclusao") {
 <div class="row mt-1"> <!-- botão alinhado a borda da tabela -->
 
   <div class="col-md-6 col-sm-12">
-    <a href="index.php?acao=pacientes&funcao=novo" class="btn btn-secondary novo-paciente">
+    <a href="index.php?acao=pacientes&funcao=novo" class="btn btn-secondary">
       <span style="font-size: 16pt;">+</span> Novo paciente
     </a>
   </div>

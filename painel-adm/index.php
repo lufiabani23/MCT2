@@ -11,6 +11,11 @@ if (!isset($_SESSION['nome_psicologo'])) {
 $pacientes = $conexao->prepare("SELECT * FROM paciente WHERE (Psicologo = $_SESSION[id_psicologo]) order by Nome asc");
 $pacientes->execute();
 $listapacientes = $pacientes->fetchALL();
+
+$sqlBuscarAgendamentos = $conexao->prepare("SELECT * FROM agendar WHERE (Psicologo = $_SESSION[id_psicologo])");
+$sqlBuscarAgendamentos->execute();
+$listaAgendamentos = $sqlBuscarAgendamentos->fetchALL();
+$_SESSION['totalAgendamentos'] = count($listaAgendamentos);
 $_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
 
 //ITENS DO MENU E DAS PAGINAS
