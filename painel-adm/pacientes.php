@@ -389,9 +389,9 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
+                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"> <?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
                                                                                                                                         echo $dadosEditarPaciente[0]["Prontuario"];
-                                                                                                                                      } ?>"></textarea>
+                                                                                                                                      } ?></textarea>
               </div>
             </div>
 
