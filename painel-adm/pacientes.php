@@ -121,6 +121,7 @@ if (isset($_POST['btnEditarPaciente'])) {
   $CPF = $_POST['CPF'];
   $prontuario = $_POST['Prontuario'];
   $endereco = $_POST['Endereco'];
+
   if (isset($_POST['enderecoFoto'])) {
     $enderecoFoto = $_POST['enderecoFoto'];
   } else {
@@ -173,6 +174,60 @@ if (isset($_POST['btnEditarPaciente'])) {
     $enderecoFoto = null;
   }
 
+if (!empty($_FILES['Anexos']['name'])) {
+  $anexos = $_FILES['Anexos'];
+  $pacienteId = $idEditarPaciente;
+  foreach ($anexos['tmp_name'] as $index => $tmp) {
+    $anexoNome = $anexos['name'][$index];
+    $anexoErro = $anexos['error'][$index];
+
+    // Verificar se não houve erros no upload do anexo
+    if ($anexoErro === UPLOAD_ERR_OK) {
+      // Definir o diretório de destino para salvar o anexo
+      $diretorioDestino = './anexosPacientes/';
+
+      // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
+      $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+
+      // Mover o arquivo temporário para o diretório de destino com o nome único
+      if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
+        // Endereço do anexo para armazenar no banco de dados
+        $enderecoAnexo = $diretorioDestino . $nomeAnexo;
+
+        // Inserir o anexo no banco de dados (dentro do loop)
+        $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
+        $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
+      }
+    }
+  }
+}
+
+  // Verificar se há anexos marcados para exclusão
+  if (isset($_POST['apagarAnexo'])) {
+    $anexosExcluir = $_POST['apagarAnexo'];
+
+    // Percorrer a lista de anexos marcados para exclusão
+    foreach ($anexosExcluir as $anexoID) {
+      // Consultar o banco de dados para obter o caminho do anexo
+      $sqlAnexo = $conexao->prepare("SELECT Anexo FROM anexos WHERE ID = :anexoID");
+      $sqlAnexo->bindParam(':anexoID', $anexoID);
+      $sqlAnexo->execute();
+      $resultadoAnexo = $sqlAnexo->fetch(PDO::FETCH_ASSOC);
+
+      // Verificar se o anexo existe
+      if ($resultadoAnexo) {
+        // Excluir o anexo do banco de dados
+        $sqlExcluirAnexo = $conexao->prepare("DELETE FROM anexos WHERE ID = :anexoID");
+        $sqlExcluirAnexo->bindParam(':anexoID', $anexoID);
+        $sqlExcluirAnexo->execute();
+
+        // Excluir o arquivo físico do anexo
+        unlink($resultadoAnexo['Anexo']);
+      }
+    }
+  }
+
+
   try {
     $sqlEditarPaciente = $conexao->prepare("UPDATE paciente SET
     Nome = :nome,
@@ -207,6 +262,7 @@ if (isset($_POST['btnEditarPaciente'])) {
     echo $e->getMessage();
   }
 }
+
 ?>
 
 <?php
@@ -345,20 +401,22 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                 <input type="file" id="Anexos" multiple="multiple" class="form-control" name="Anexos[]">
                 <?php
                 if (!empty($anexosPaciente)) { ?>
-                  <table class="table table-estriped">
+                  <table class="table table-estriped mt-2">
                     <tr>
-                      <th scope="col">Nome</th>
-                      <th scope="col">Ação</th>
+                      <th scope="col">Nome do anexo</th>
+                      <th scope="col" colspan="3">Ação</th>
                     </tr>
                     <?php foreach ($anexosPaciente as $indice => $linha) { ?>
                       <tr>
+                      <input type="hidden" name="anexosExistentes[]" value="<?php echo $linha['Anexo']; ?>">
                         <td scope="row"><?php echo ($linha['Nome']); ?> </td>
-                        <td scope="row"><input class="" type="checkbox" id="apagarAnexo<?php echo $linha['ID'] ?>" name="apagarAnexo<?php echo $linha['ID'] ?>"> <label for="apagarAnexo<?php echo $linha['ID'] ?>">Deletar foto</label></td>
+                        <td scope="row"> <?php $caminhoArquivo = $linha['Anexo']; ?> <a href="<?php echo $caminhoArquivo; ?>" target="_blank">Abrir</a> </td>
+                        <td scope="row"> <a href="<?php echo $caminhoArquivo; ?>" download>Download</a> </td>
+                        <td scope="row"> <input class="" type="checkbox" id="apagarAnexo<?php echo $linha['ID']; ?>" name="apagarAnexo[]" value="<?php echo $linha['ID']; ?>"> <label for="apagarAnexo<?php echo $linha['ID']; ?>">Deletar arquivo</label> </td>
                       </tr>
                     <?php }
                     ?>
                   </table>
-                  <input type="hidden" value="<?php echo $dadosEditarPaciente[0]["Foto"]; ?>" name="enderecoFoto">
                 <?php } ?>
               </div>
             </div>
