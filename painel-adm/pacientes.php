@@ -71,7 +71,7 @@ if (isset($_POST['btnNovoPaciente'])) {
     echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";
   } else {
     try {
-      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,?,?,?,?,?,null,?)");
+      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,?,?,?,?,?,?)");
       $sql->execute(array(
         $nome, $telefone, $email, $nascimento, $convenio, $enderecoFoto, $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
       ));
@@ -102,7 +102,7 @@ if (isset($_POST['btnNovoPaciente'])) {
           }
         }
       }
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+      //echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
       echo $e;
     }
@@ -389,9 +389,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"> <?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
-                                                                                                                                        echo $dadosEditarPaciente[0]["Prontuario"];
-                                                                                                                                      } ?></textarea>
+                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"><?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {echo $dadosEditarPaciente[0]["Prontuario"];} ?></textarea>
               </div>
             </div>
 
