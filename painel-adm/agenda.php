@@ -46,7 +46,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modalNovoAgendamento">AGENDAMENTO</h5>
+        <h5 class="modal-title" id="modalNovoAgendamento">NOVO AGENDAMENTO</h5>
         <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png"></div>
         </button>
       </div>
@@ -60,7 +60,7 @@ if (isset($_POST['btnNovoAgendamento'])) {
                 <option>--Selecione--</option>
                 <?php
                 foreach ($listapacientes as $indice => $linha) {
-                  echo "<option>" . $linha['Nome'];
+                  echo "<option>" . $linha['Nome'] .
                   "</option>";
                 }; ?>
               </select>
@@ -182,17 +182,15 @@ foreach ($events as $i => $linha) {
 
 </div>
 
-<!-- jQuery Version 3.6.0 -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Bootstrap Core JavaScript NÃO ABRE O MENU -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
+<!-- Bootstrap Core JavaScript NÃO ABRE O MENU // importado direto do código do sistema -->
+
 
 <!-- FullCalendar -->
+
 <script src='calendar/js/moment.min.js'></script>
 <script src='calendar/js/fullcalendar.min.js'></script>
 <script src='calendar/locale/pt-br.js'></script>
-<?php include_once('calendar/calendario.php'); ?>
+<?php include('calendar/calendario.php'); ?>
 </div>

@@ -5,3 +5,4 @@
 unset($_Session['nome_psicologo']);
 header ('location:index.php');
 ?>
+
