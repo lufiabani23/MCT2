@@ -196,7 +196,6 @@ if (isset($_POST['btnEditarAgendamento'])) {
             <div class="form-group col-md-9 col-sm-12">
               <label for="NomePaciente">Paciente</label>
               <select class="form-control" id="NomePaciente" name="NomePaciente">
-                <option>--Selecione--</option>
                 <?php
                 foreach ($listapacientes as $indice => $linha) {
                   echo "<option>" . $linha['Nome'] .
@@ -313,13 +312,6 @@ foreach ($events as $i => $linha) {
     }
   </script>
 
-
-  <!-- Modal Adicionar Evento -->
-  <?php include('calendar/evento/modal/modalAdd.php'); ?>
-
-
-  <!-- Modal Editar/Mostrar/Deletar Evento -->
-  <?php include('calendar/evento/modal/modalEdit.php'); ?>
 
 </div>
 
