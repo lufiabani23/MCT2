@@ -65,7 +65,7 @@ if (isset($_POST['btnNovoPaciente'])) {
   } else {
     $enderecoFoto = null;
   }
-
+  
   if (empty($nome) or empty($telefone) or empty($nascimento) or empty($convenio) or empty($CPF)) {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
     echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";

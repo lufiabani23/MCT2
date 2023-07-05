@@ -1,5 +1,3 @@
-
-
 <script>
 function modalShow() {
     $('#modalShow').modal('show');
@@ -20,18 +18,22 @@ $(document).ready(function() {
         selectable: true,
         selectHelper: true,
         select: function(start, end) {
-            $('#ModalAdd #inicio').val(moment(start).format('DD-MM-YYYY HH:mm:ss'));
-            $('#ModalAdd #termino').val(moment(end).format('DD-MM-YYYY HH:mm:ss'));
-            $('#ModalAdd').modal('show');
+            $('#botaoNovoAgendamento #DataAgendamento').val(moment(start).format('YYYY-MM-DD'));
+            $('#botaoNovoAgendamento #HoraAgendamento').val(moment(start).format('H'));
+            $('#botaoNovoAgendamento #MinutoAgendamento').val(moment(start).format('m'));
+            $('#botaoNovoAgendamento').modal('show');
         },
         eventRender: function(event, element) {
             element.bind('click', function() {
-                $('#ModalEdit #id_evento').val(event.id);
-                $('#ModalEdit #titulo').val(event.title);
-                $('#ModalEdit #descricao').val(event.description);
-                $('#ModalEdit #inicio').val(moment(event.start).format('DD-MM-YYYY HH:mm:ss'));
-                $('#ModalEdit #termino').val(moment(event.end).format('DD-MM-YYYY HH:mm:ss'));
-                $('#ModalEdit').modal('show');
+                $('#botaoEditarAgendamento #idEvento').val(event.id);
+                $('#botaoEditarAgendamento #NomePaciente').val(event.title);
+                $('#botaoEditarAgendamento #MotivoAgendamento').val(event.motivo);
+                $('#botaoEditarAgendamento #OBSAgendamento').val(event.obs);
+                $('#botaoEditarAgendamento #ValorAgendamento').val(event.valor);
+                $('#botaoEditarAgendamento #DataAgendamento').val(moment(event.start).format('YYYY-MM-DD'));
+                $('#botaoEditarAgendamento #HoraAgendamento').val(moment(event.start).format('H'));
+                $('#botaoEditarAgendamento #MinutoAgendamento').val(moment(event.start).format('m'));
+                $('#botaoEditarAgendamento').modal('show');
             });
         },
         eventDrop: function(event, delta, revertFunc) {
@@ -58,7 +60,9 @@ $(document).ready(function() {
             {
                 id: '<?php echo $event['ID']; ?>',
                 title: '<?php echo $event['Paciente']; ?>',
-                description: '<?php echo $event['Motivo']; ?>',
+                motivo: '<?php echo $event['Motivo']; ?>',
+                obs: '<?php echo $event['OBS.']; ?>',
+                valor: '<?php echo $event['Valor']; ?>',
                 start: '<?php echo $start; ?>',
                 end: '<?php echo $end; ?>',
             },
