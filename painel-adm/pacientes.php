@@ -102,7 +102,7 @@ if (isset($_POST['btnNovoPaciente'])) {
           }
         }
       }
-      //echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
     } catch (Exception $e) {
       echo $e;
     }

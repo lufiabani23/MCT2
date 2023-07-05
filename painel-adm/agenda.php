@@ -43,44 +43,52 @@ if (isset($_POST['btnEditarAgendamento'])) {
   $motivoAgendamento = $_POST['MotivoAgendamento'];
   $obsAgendamento = $_POST['OBSAgendamento'];
   $valorAgendamento = $_POST['ValorAgendamento'];
+  $deletarAgendamento = isset($_POST['DeletarAgendamento']);
 
-  $duracaoAgendamento = '+45 minutes';
-  $dataAgendamentoInicio = date('Y-m-d H:i:s', strtotime($dataDia . ' ' . $horaAgendamento . ':' . $minutoAgendamento));
-  $dataAgendamentoFim = date('Y-m-d H:i:s', strtotime($dataAgendamentoInicio . $duracaoAgendamento));
-
-  $sqlBuscaPaciente = $conexao->prepare("SELECT ID FROM paciente where (Nome = '$nomePaciente')");
-  $sqlBuscaPaciente->execute();
-  $idPaciente = $sqlBuscaPaciente->fetchAll(PDO::FETCH_ASSOC);
-
-  if (empty($nomePaciente) or empty($dataDia) or !isset($horaAgendamento) or $horaAgendamento === "" or !isset($minutoAgendamento) or $minutoAgendamento === "") {
-    echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
-    echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=danger'; </script>";
+  if ($deletarAgendamento == 1) {
+    $sqlApagarAgendamento = $conexao->prepare("DELETE FROM agendar WHERE (ID = $idEvento)");
+    $sqlApagarAgendamento->execute();
+    echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
   } else {
-    try {
-      $sqlEditarAgendamento = $conexao->prepare("UPDATE agendar SET
-       Paciente = :paciente,
-       Data_Inicio = :dataInicio,
-       Data_Fim = :dataFim,
-       Motivo = :motivo,
-       `OBS.` = :obs,
-       Valor = :valor
-       WHERE (ID = $idEvento)");
+    $duracaoAgendamento = '+45 minutes';
+    $dataAgendamentoInicio = date('Y-m-d H:i:s', strtotime($dataDia . ' ' . $horaAgendamento . ':' . $minutoAgendamento));
+    $dataAgendamentoFim = date('Y-m-d H:i:s', strtotime($dataAgendamentoInicio . $duracaoAgendamento));
 
-      $sqlEditarAgendamento ->execute(array(
-        ':paciente' => $idPaciente[0]['ID'],
-        ':dataInicio' => $dataAgendamentoInicio,
-        ':dataFim' => $dataAgendamentoFim,
-        ':motivo' => $motivoAgendamento,
-        ':obs' => $obsAgendamento,
-        ':valor' => $valorAgendamento
-      ));
-      echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
-    } catch (Exception $e) {
-      echo $e;
+    $sqlBuscaPaciente = $conexao->prepare("SELECT ID FROM paciente where (Nome = '$nomePaciente')");
+    $sqlBuscaPaciente->execute();
+    $idPaciente = $sqlBuscaPaciente->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($nomePaciente) or empty($dataDia) or !isset($horaAgendamento) or $horaAgendamento === "" or !isset($minutoAgendamento) or $minutoAgendamento === "") {
+      echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=danger'; </script>";
+    } else {
+      try {
+        $sqlEditarAgendamento = $conexao->prepare("UPDATE agendar SET
+         Paciente = :paciente,
+         Data_Inicio = :dataInicio,
+         Data_Fim = :dataFim,
+         Motivo = :motivo,
+         `OBS.` = :obs,
+         Valor = :valor
+         WHERE (ID = $idEvento)");
+
+        $sqlEditarAgendamento->execute(array(
+          ':paciente' => $idPaciente[0]['ID'],
+          ':dataInicio' => $dataAgendamentoInicio,
+          ':dataFim' => $dataAgendamentoFim,
+          ':motivo' => $motivoAgendamento,
+          ':obs' => $obsAgendamento,
+          ':valor' => $valorAgendamento
+        ));
+        echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
+      } catch (Exception $e) {
+        echo $e;
+      }
     }
   }
 }
 
+  
 ?>
 
 <!-- BOTÃO DE NOVO AGENDAMENTO -->
@@ -241,6 +249,8 @@ if (isset($_POST['btnEditarAgendamento'])) {
               <textarea class="form-control" name="OBSAgendamento" id="OBSAgendamento" placeholder="Observações"></textarea>
             </div>
           </div>
+
+          <input type="checkbox" name="DeletarAgendamento" id="DeletarAgendamento"> <label for="DeletarAgendamento">Deletar agendamento</label>
         </form>
 
       </div>
