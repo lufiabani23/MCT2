@@ -236,11 +236,11 @@ a.card-atendimento h2, a.card-atendimento h5 {
 div.card-atendimento h2 {
     font-size: 1.5em ;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-height: 3em; /* Altura máxima para duas linhas de texto */
+    max-height: 4em; /* Altura máxima para duas linhas de texto */
 }
 
 

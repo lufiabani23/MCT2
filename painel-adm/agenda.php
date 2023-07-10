@@ -23,9 +23,9 @@ if (isset($_POST['btnNovoAgendamento'])) {
     echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=danger'; </script>";
   } else {
     try {
-      $sql = $conexao->prepare("INSERT INTO agendar VALUES (?,?,null,?,?,?,?,?)");
+      $sql = $conexao->prepare("INSERT INTO agendar VALUES (?,?,null,?,?,?,?,?,?)");
       $sql->execute(array(
-        $_SESSION['id_psicologo'], $idPaciente[0]['ID'], $dataAgendamentoInicio, $dataAgendamentoFim, $motivoAgendamento, $obsAgendamento, $valorAgendamento
+        $_SESSION['id_psicologo'], $idPaciente[0]['ID'], $dataAgendamentoInicio, $dataAgendamentoFim, $motivoAgendamento, $obsAgendamento, $valorAgendamento, 0
       ));
       echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
     } catch (Exception $e) {

@@ -37,7 +37,7 @@ elseif (@$_GET['acao'] == $item2 or isset($_GET['btnBuscarPacientes']))
     $item2ativo = 'active';
 elseif (@$_GET['acao'] == $item3)
     $item3ativo = 'active';
-elseif (@$_GET['acao'] == $item4)
+elseif (@$_GET['acao'] == $item4 or @$_GET['acao'] == "atendimentosPassados" or isset($_GET['btnBuscarAtendimentos']))
     $item4ativo = 'active';
 elseif (@$_GET['acao'] == $item5 or isset($_GET[$item5]))
     $item5ativo = 'active';
@@ -124,6 +124,8 @@ else
                         include_once($item3 . ".php");
                     elseif (@$_GET['acao'] == $item4)
                         include_once($item4 . ".php");
+                    elseif (@$_GET['acao'] == 'atendimentosPassados' or isset($_GET['btnBuscarAtendimentos']))
+                        include_once("atendimentosPassados.php");
                     elseif (@$_GET['acao'] == $item5)
                         include_once($item5 . ".php");
                     elseif (@$_GET['acao'] == $item6)
