@@ -99,7 +99,7 @@ if (isset($_POST['btnEditarAgendamento'])) {
 </div>
 
 <!-- MODAL DE NOVO AGENDAMENTO -->
-<div class="modal fade novo-agendamento novo-modal" id="botaoNovoAgendamento" tabindex="-1" role="dialog" aria-labelledby="#modalNovoAgendamento" aria-hidden="true">
+<div class="modal fade novo-agendamento novo-modal" data-backdrop="static" id="botaoNovoAgendamento" tabindex="-1" role="dialog" aria-labelledby="#modalNovoAgendamento" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -180,7 +180,7 @@ if (isset($_POST['btnEditarAgendamento'])) {
 </div>
 
 <!-- MODAL DE EDITAR AGENDAMENTO -->
-<div class="modal fade novo-agendamento novo-modal" id="botaoEditarAgendamento" tabindex="-1" role="dialog" aria-labelledby="#modalEditarAgendamento" aria-hidden="true">
+<div class="modal fade novo-agendamento novo-modal"  data-backdrop="static" id="botaoEditarAgendamento" tabindex="-1" role="dialog" aria-labelledby="#modalEditarAgendamento" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">

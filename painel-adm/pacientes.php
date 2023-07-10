@@ -65,7 +65,7 @@ if (isset($_POST['btnNovoPaciente'])) {
   } else {
     $enderecoFoto = null;
   }
-  
+
   if (empty($nome) or empty($telefone) or empty($nascimento) or empty($convenio) or empty($CPF)) {
     echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
     echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";
@@ -174,33 +174,33 @@ if (isset($_POST['btnEditarPaciente'])) {
     $enderecoFoto = null;
   }
 
-if (!empty($_FILES['Anexos']['name'])) {
-  $anexos = $_FILES['Anexos'];
-  $pacienteId = $idEditarPaciente;
-  foreach ($anexos['tmp_name'] as $index => $tmp) {
-    $anexoNome = $anexos['name'][$index];
-    $anexoErro = $anexos['error'][$index];
+  if (!empty($_FILES['Anexos']['name'])) {
+    $anexos = $_FILES['Anexos'];
+    $pacienteId = $idEditarPaciente;
+    foreach ($anexos['tmp_name'] as $index => $tmp) {
+      $anexoNome = $anexos['name'][$index];
+      $anexoErro = $anexos['error'][$index];
 
-    // Verificar se não houve erros no upload do anexo
-    if ($anexoErro === UPLOAD_ERR_OK) {
-      // Definir o diretório de destino para salvar o anexo
-      $diretorioDestino = './anexosPacientes/';
+      // Verificar se não houve erros no upload do anexo
+      if ($anexoErro === UPLOAD_ERR_OK) {
+        // Definir o diretório de destino para salvar o anexo
+        $diretorioDestino = './anexosPacientes/';
 
-      // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
-      $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+        // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
+        $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
 
-      // Mover o arquivo temporário para o diretório de destino com o nome único
-      if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
-        // Endereço do anexo para armazenar no banco de dados
-        $enderecoAnexo = $diretorioDestino . $nomeAnexo;
+        // Mover o arquivo temporário para o diretório de destino com o nome único
+        if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
+          // Endereço do anexo para armazenar no banco de dados
+          $enderecoAnexo = $diretorioDestino . $nomeAnexo;
 
-        // Inserir o anexo no banco de dados (dentro do loop)
-        $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
-        $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
+          // Inserir o anexo no banco de dados (dentro do loop)
+          $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
+          $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
+        }
       }
     }
   }
-}
 
   // Verificar se há anexos marcados para exclusão
   if (isset($_POST['apagarAnexo'])) {
@@ -280,7 +280,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
   };
 ?>
   <!-- MODAL DE PACIENTE -->
-  <div class="modal fade modal-paciente novo-modal" id="modalPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalPaciente" aria-hidden="true">
+  <div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalPaciente" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -389,7 +389,9 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"><?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {echo $dadosEditarPaciente[0]["Prontuario"];} ?></textarea>
+                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"><?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
+                                                                                                                                  echo $dadosEditarPaciente[0]["Prontuario"];
+                                                                                                                                } ?></textarea>
               </div>
             </div>
 
@@ -406,7 +408,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                     </tr>
                     <?php foreach ($anexosPaciente as $indice => $linha) { ?>
                       <tr>
-                      <input type="hidden" name="anexosExistentes[]" value="<?php echo $linha['Anexo']; ?>">
+                        <input type="hidden" name="anexosExistentes[]" value="<?php echo $linha['Anexo']; ?>">
                         <td scope="row"><?php echo ($linha['Nome']); ?> </td>
                         <td scope="row"> <?php $caminhoArquivo = $linha['Anexo']; ?> <a href="<?php echo $caminhoArquivo; ?>" target="_blank">Abrir</a> </td>
                         <td scope="row"> <a href="<?php echo $caminhoArquivo; ?>" download>Download</a> </td>
@@ -421,9 +423,15 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
           </form>
         </div>
         <div class="modal-footer">
+          <?php if (isset($idEditarPaciente)) { ?>
+            <div class="text-left mr-auto">
+              <a form="formModalPaciente" class="btn btn-warning text-white" href="export/paciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Exportar</a>
+            </div>
+          <?php } ?>
           <button form="formModalPaciente" type="submit" class="btn btn-success" name="<?php echo ($_GET['funcao'] == 'editar') ? 'btnEditarPaciente' : 'btnNovoPaciente'; ?>"><?php echo ($_GET['funcao'] == 'editar') ? 'Editar' : 'Cadastrar'; ?></button>
-          <button form="forModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item2 ?>">Cancelar</button>
+          <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item2 ?>">Cancelar</button>
         </div>
+
       </div>
     </div>
   </div>

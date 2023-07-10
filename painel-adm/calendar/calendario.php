@@ -12,7 +12,7 @@ $(document).ready(function() {
         },
         locale: 'pt-br',
         defaultDate: '<?php echo date('Y-m-d'); ?>',
-        editable: true,
+        editable: false,
         navLinks: true,
         eventLimit: true,
         selectable: true,

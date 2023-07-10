@@ -124,12 +124,12 @@ div.calendarioAgenda {
 .btn-secondary {
     background-color: #005257 !important;
     border: none;
-    color: white;
+    color: white !important;
 }
 
 .btn-secondary:hover {
     background-color:#00c2cb !important;
-    color: white;
+    color: white !important;
 }
 
 /* MODAL DE CADASTRO PADRÃO */
@@ -162,4 +162,115 @@ div.modal-paciente img.foto-paciente{
     box-shadow: 0px 2px 2px #005257;
     margin-top: -0.5em;
     object-fit: cover;
+}
+
+
+
+
+/* FORMATAÇÕES CARD ATENDIMENTO */
+
+
+a.card-atendimento {
+    text-decoration: none;
+}
+
+.card-atendimento {
+    width: 20em;
+}
+
+
+div.card-atendimento-body {
+    background-color: #00c2cb !important;
+    height: 10em;
+    border-radius: 5%;
+    overflow: hidden;
+}
+
+a.card-atendimento::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 300ms;
+    border-radius: 5%;
+}
+
+a.card-atendimento::after {
+    content: "Iniciar Atendimento";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 300ms;
+}
+
+a.card-atendimento:hover::before,
+a.card-atendimento:hover::after {
+    opacity: 1;
+}
+
+
+img.foto-paciente{
+    width: 7em;
+    height: 7em;
+    border-radius: 50%;
+    box-shadow: 0px 2px 2px #005257;
+    margin-top: 1em;
+    object-fit: cover;
+}
+
+a.card-atendimento h2, a.card-atendimento h5 {
+    color: white;
+}
+
+div.card-atendimento h2 {
+    font-size: 1.5em ;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3em; /* Altura máxima para duas linhas de texto */
+}
+
+
+
+
+/* FORMATAÇÃO RELATÓRIO */
+
+
+div.relatorio {
+    background-color: #00c2cb;
+}
+
+img.relatorio {
+    width: 8em;
+    height: 8em;
+    border-radius: 50%;
+    box-shadow: 0px 2px 2px #005257;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    object-fit: cover;
+}
+
+
+footer.relatorio {
+    position: absolute;
+    bottom: 0;
+    color: #FFF;
+    width: 100%;
+    height: 150px;    
+    text-align: center;
+    background-color: #00c2cb;
 }
