@@ -5,6 +5,7 @@ date_default_timezone_set('America/Sao_Paulo');
 
 $datetimeToday = date('Y-m-d ');
 
+//BUSCAR AGENDAMENTOS PARA HOJE
 $sqlBuscarAgendamentos = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio > :dataInicio AND Data_Inicio < :dataFim AND Realizado = 0");
 $sqlBuscarAgendamentos->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
 $sqlBuscarAgendamentos->bindValue(':dataInicio', $datetimeToday . "00:00:00");
@@ -12,28 +13,15 @@ $sqlBuscarAgendamentos->bindValue(':dataFim', $datetimeToday . "23:59:59");
 $sqlBuscarAgendamentos->execute();
 $listaAgendamentos = $sqlBuscarAgendamentos->fetchAll();
 
-$sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM atendimento WHERE Psicologo = :psicologo_id AND Data_Inicio > :dataInicio AND Data_Inicio < :dataFim");
+// BUSCAR ATENDIMENTOS PASSADOS
+$sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM atendimento WHERE Psicologo = :psicologo_id");
 $sqlBuscarAtendimentos->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
-$sqlBuscarAtendimentos->bindValue(':dataInicio', $datetimeToday . "00:00:00");
-$sqlBuscarAtendimentos->bindValue(':dataFim', $datetimeToday . "23:59:59");
 $sqlBuscarAtendimentos->execute();
 $listaAtendimentos = $sqlBuscarAtendimentos->fetchAll();
 
-$listaPacientesAtendimentos = array(); // Inicializa a variável $listaPacientes como um array vazio
-
-foreach ($listaAtendimentos as $linha) {
-    $idPaciente = $linha["Paciente"];
-    $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE ID = :id_paciente");
-    $sqlBuscarPaciente->bindValue(':id_paciente', $idPaciente);
-    $sqlBuscarPaciente->execute();
-    $paciente = $sqlBuscarPaciente->fetch();
-
-    $listaPacientesAtendimentos[] = $paciente;
-}
-
-
 $listaPacientes = array(); // Inicializa a variável $listaPacientes como um array vazio
 
+// CONVERTER O AGENDAMENTO EM PACIENTE
 foreach ($listaAgendamentos as $linha) {
     $idPaciente = $linha["Paciente"];
     $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE ID = :id_paciente");
@@ -44,6 +32,7 @@ foreach ($listaAgendamentos as $linha) {
     $listaPacientes[] = $paciente;
 }
 
+// INSERINDO (FINALIZANDO) ATENDIMENTO
 if (isset($_POST['btnFinalizarAtendimento'])) {
 
     $motivo = $_POST['Motivo'];
@@ -76,18 +65,84 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
     $sqlRealizarAgendamento = $conexao->prepare("UPDATE agendar SET Realizado = 1 WHERE ID = $idAgendamento");
     $sqlRealizarAgendamento->execute();
 
-    echo "<script language='javascript'> window.location='index.php?acao=atendimento&alert=success'; </script>";
+    echo "<script language='javascript'> window.location='index.php?acao=$item4&alert=success'; </script>";
 }
 
+// Sistema para buscar atendimentos - CONVERSÃO DE ATENDIMENTO PARA PACIENTE
+if (isset($_GET['btnBuscarAtendimentos']) && $_GET['txtBuscarAtendimentos'] != "") {
+    $txtBuscarAtendimentos = isset($_GET['txtBuscarAtendimentos']) ? "%" . $_GET['txtBuscarAtendimentos'] . "%" : "%";
+    $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE Nome LIKE :buscarNome");
+    $sqlBuscarPaciente->bindValue(':buscarNome', $txtBuscarAtendimentos);
+    $sqlBuscarPaciente->execute();
 
+
+
+    if ($sqlBuscarPaciente->rowCount() > 0) {
+        $pacientes = $sqlBuscarPaciente->fetchAll();
+
+        $listaAtendimentos = array(); // Inicializa a lista de atendimentos
+
+        foreach ($pacientes as $paciente) {
+            $idPaciente = $paciente["ID"];
+
+            $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM atendimento WHERE Psicologo = :psicologo_id AND Paciente = :paciente_id ORDER BY ID DESC");
+            $sqlBuscarAtendimentos->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
+            $sqlBuscarAtendimentos->bindValue(':paciente_id', $idPaciente);
+            $sqlBuscarAtendimentos->execute();
+
+            $atendimentos = $sqlBuscarAtendimentos->fetchAll();
+
+            $listaAtendimentos = array_merge($listaAtendimentos, $atendimentos); // Adiciona os atendimentos encontrados à lista geral
+        }
+    } else {
+        $listaAtendimentos = array(); // Caso nenhum paciente seja encontrado, a lista de atendimentos será vazia
+    }
+} else {
+    $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM atendimento WHERE Psicologo = :psicologo_id ORDER BY ID DESC");
+    $sqlBuscarAtendimentos->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
+    $sqlBuscarAtendimentos->execute();
+    $listaAtendimentos = $sqlBuscarAtendimentos->fetchAll();
+}
+
+$listaPacientesAtendimentos = array(); // Inicializa a variável $listaPacientesAtendimentos como um array vazio
+
+// Definir o número de itens por página
+$itensPorPagina = 6;
+
+// Contar o número total de atendimentos
+$totalAtendimentos = count($listaAtendimentos);
+
+// Calcular o número total de páginas
+$totalPaginas = ceil(count($listaAtendimentos) / $itensPorPagina);
+
+// Verificar a página atual
+$paginaAtual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
+
+// Calcular o índice inicial e final dos itens a serem exibidos na página atual
+$indiceInicial = ($paginaAtual - 1) * $itensPorPagina;
+$indiceFinal = $indiceInicial + $itensPorPagina;
+
+// Obter os atendimentos a serem exibidos na página atual
+$atendimentosPagina = array_slice($listaAtendimentos, $indiceInicial, $itensPorPagina);
+
+foreach ($atendimentosPagina as $linha) {
+    $idPaciente = $linha["Paciente"];
+    $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE ID = :id_paciente");
+    $sqlBuscarPaciente->bindValue(':id_paciente', $idPaciente);
+    $sqlBuscarPaciente->execute();
+    $paciente = $sqlBuscarPaciente->fetch();
+
+    $listaPacientesAtendimentos[] = $paciente;
+}
 ?>
 
 <h1>Próximos atendimentos</h1>
-<div class="row ml-2">
+<div class="row">
+<?php if (count($listaAgendamentos) > 0) { ?>
     <?php foreach ($listaAgendamentos as $indice => $linha) { ?>
         <div class="col-md-4 col-sm-12 mb-2">
             <div class="card card-atendimento">
-                <a href="index.php?acao=atendimento&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]['ID']; ?>&idAtendimento=<?php echo $listaAgendamentos[$indice]["ID"]; ?>" class="card-atendimento">
+                <a href="index.php?acao=<?php echo $item4; ?>&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]['ID']; ?>&idAgendamento=<?php echo $listaAgendamentos[$indice]["ID"]; ?>" class="card-atendimento">
                     <div class="card-body card-atendimento-body">
                         <div class="row">
                             <div class="col-5">
@@ -107,15 +162,34 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
                 </a>
             </div>
         </div>
-    <?php } ?>
+    <?php } 
+    } else { ?>
+                <div class="col-12">
+                    <p>Você não tem nenhum atendimento para hoje :)</p>
+                </div>
+            <?php } ?>
 </div>
 
-<h1>Atendimentos passados</h1>
-<div class="row ml-2">
-    <?php foreach ($listaAtendimentos as $indice => $linha) { ?>
+<h1>Atendimentos realizados</h1>
+
+
+<div class="row mb-1">
+    <div class="col">
+        <div class="float-right">
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2 " type="search" placeholder="Buscar atendimento" aria-label="Search" name="txtBuscarAtendimentos" value="<?php echo isset($_GET['txtBuscarAtendimentos']) ? $_GET['txtBuscarAtendimentos'] : ''; ?>">
+                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" name="btnBuscarAtendimentos">Buscar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row card-realizado">
+<?php if (count($atendimentosPagina) > 0) { ?>
+        <?php foreach ($atendimentosPagina as $indice => $linha) { ?>
         <div class="col-md-4 col-sm-12 mb-2">
             <div class="card card-atendimento">
-                <a href="index.php?acao=atendimento&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]['ID']; ?>&idAtendimento=<?php echo $listaAgendamentos[$indice]["ID"]; ?>" class="card-atendimento">
+                <a href="index.php?acao=<?php echo $item4; ?>&funcao=visualizarAtendimento&idPaciente=<?php echo $listaPacientesAtendimentos[$indice]['ID']; ?>&idAtendimento=<?php echo $listaAtendimentos[$indice]["ID"]; ?>" class="card-atendimento">
                     <div class="card-body card-atendimento-body">
                         <div class="row">
                             <div class="col-5">
@@ -135,13 +209,12 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
                 </a>
             </div>
         </div>
+        <?php } ?>
+    <?php } else { ?>
+        <div class="col-12">
+            <p>Nenhum atendimento encontrado.</p>
+        </div>
     <?php } ?>
-</div>
-<div class="row mb-3">
-    <div class="col text-right">
-    <a href="index.php?acao=atendimentosPassados">Ver todos</a>
-    </div>
-
 </div>
 
 
@@ -156,10 +229,10 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
             </div>
             <div class="modal-body">
                 <?php
-                if (isset($_GET['idPaciente']) and isset($_GET['idAtendimento'])) {
+                if (isset($_GET['idPaciente']) and isset($_GET['idAgendamento'])) {
                     try {
                         $idPaciente = $_GET["idPaciente"];
-                        $idAtendimento = $_GET["idAtendimento"];
+                        $idAgendamento = $_GET["idAgendamento"];
 
                         $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE (ID = $idPaciente)");
                         $sqlBuscarPaciente->execute();
@@ -178,7 +251,7 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
                         $formasPGTO = $sqlBuscarPGTO->fetchAll();
 
 
-                        $sqlBuscarAgendamento = $conexao->prepare("SELECT * FROM agendar WHERE (ID = $idAtendimento)");
+                        $sqlBuscarAgendamento = $conexao->prepare("SELECT * FROM agendar WHERE (ID = $idAgendamento)");
                         $sqlBuscarAgendamento->execute();
                         $dadosAgendamento = $sqlBuscarAgendamento->fetch();
                     } catch (Exception $e) {
@@ -248,16 +321,150 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
                 <?php } ?>
             </div>
             <div class="modal-footer">
-                <input href="index.php?acao=atendimento" form="formModalAtendimento" type="submit" class="btn btn-success" value="Finalizar Atendimento" name="btnFinalizarAtendimento">
-                <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item4 ?>">Cancelar</button>                    
+                <input form="formModalAtendimento" type="submit" class="btn btn-success" value="Finalizar Atendimento" name="btnFinalizarAtendimento">
+                <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item4 ?>">Cancelar</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL VISUALIZAR ATENDIMENTO -->
+<div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalVisualizar" tabindex="-1" role="dialog" aria-labelledby="#modalVisualizar" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalVisualizar">VISUALIZAR ATENDIMENTO</h5>
+                <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png"></div>
+                </button>
+            </div>
+            <div class="modal-body">
+                <?php
+                if (isset($_GET['idPaciente']) and isset($_GET['idAtendimento'])) {
+                    try {
+                        $idPaciente = $_GET["idPaciente"];
+                        $idAtendimento = $_GET["idAtendimento"];
+
+                        $sqlBuscarPaciente = $conexao->prepare("SELECT * FROM paciente WHERE (ID = $idPaciente)");
+                        $sqlBuscarPaciente->execute();
+                        $dadosPaciente = $sqlBuscarPaciente->fetch();
+
+                        $convenioPaciente = $dadosPaciente["Convenio"];
+                        $sqlBuscarConvenio = $conexao->prepare("SELECT * FROM convenios WHERE (ID = :convenio_id)");
+                        $sqlBuscarConvenio->bindValue(':convenio_id', $convenioPaciente);
+                        $sqlBuscarConvenio->execute();
+                        $dadosConvenio = $sqlBuscarConvenio->fetch();
+
+                        $sqlBuscarAtendimento = $conexao->prepare("SELECT * FROM atendimento WHERE (ID = $idAtendimento)");
+                        $sqlBuscarAtendimento->execute();
+                        $dadosAtendimento = $sqlBuscarAtendimento->fetch();
+                    } catch (Exception $e) {
+                        echo $e;
+                    }
+                ?>
+
+                    <form id="formModalAtendimento" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>?acao=<?php echo $item4; ?>">
+                        <div class="row">
+                            <div class="col-2">
+                                <div class=" text-center mt-3">
+                                    <img class="card-img-top foto-paciente " width="200em" src="<?php echo $dadosPaciente["Foto"]; ?>"> <br><br>
+                                    <h5><?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                                        $formatoData = date("d/m", $dataInicio);
+                                        echo $formatoData; ?> <br>
+                                        Início: <?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                                        $formatoData = date("H:i", $dataInicio);
+                                        echo $formatoData; ?> <br>
+                                        Termínio: <?php $dataFim = strtotime($dadosAtendimento["Data_Fim"]);
+                                        $formatoData = date("H:i", $dataFim);
+                                        echo $formatoData; ?>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <h4>Paciente: <?php echo $dadosPaciente["Nome"]; ?></h4>
+                                <h5>Gênero: <?php echo $dadosPaciente["Genero"]; ?></h5>
+                                <h5>Convênio: <?php echo $dadosConvenio["Nome"]; ?></h5>
+
+                                <label for="Prontuario">Prontuário:</label><textarea readonly rows="4" id="Prontuario" class="form-control"><?php echo $dadosPaciente["Prontuario"]; ?></textarea>
+
+                                <label for="Motivo">Motivo:</label>
+                                <textarea class="form-control" id="Motivo" name="Motivo" readonly><?php echo $dadosAtendimento["Motivo"]; ?></textarea>
+
+                            </div>
+                            <div class="col-5">
+                                <label for="Registro">Registro:</label>
+                                <textarea class="form-control" id="Registro" rows="13" name="Registro" readonly><?php echo $dadosAtendimento["Registro"]; ?></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"></div>
+                            <div class="col-4">
+                                <label for="Valor">Valor:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">R$</div>
+                                        <input readonly type="number" id="Valor" style="width: 19em;" name="Valor" class="form-control" placeholder="Valor do Atendimento" value="<?php echo $dadosAtendimento['Valor']; ?>">
+                                    </div>
+                                </div>
+                                <label for="FormaPGTO">Forma de Pagamento:</label>
+                                <select class="form-control" id="FormaPGTO" name="FormaPGTO" disabled>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Dinheiro") echo "selected"; ?>>Dinheiro</option>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "PIX") echo "selected"; ?>>PIX</option>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Boleto") echo "selected"; ?>>Boleto</option>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Transferência Bancária") echo "selected"; ?>>Transferência Bancária</option>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Cartão crédito/débito") echo "selected"; ?>>Cartão crédito/débito</option>
+                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Outro") echo "selected"; ?>>Outro</option>
+                                </select>
+                            </div>
+
+                            <div class="col-5">
+                                <label for="OBS">OBS.</label>
+                                <textarea rows="4" class="form-control" id="OBS" name="OBS" readonly><?php echo $dadosAtendimento["OBS"]; ?></textarea>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
+                        <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
+                        <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>">
+
+                    </form>
+                <?php } ?>
+            </div>
+            <div class="modal-footer">
+                <div class="text-left mr-auto">
+                    <a form="formModalPaciente" class="btn btn-warning text-white" href="export/atendimento.php?idAtendimento=<?php echo $dadosAtendimento["ID"]; ?>" target="_blank">Exportar</a>
+                </div>
+                <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item4 ?>">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exibir a paginação -->
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="Navegação de página">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++) { ?>
+                    <li class="page-item <?php if ($i == $paginaAtual) echo 'active'; ?>">
+                        <a class="page-link" href="?acao=atendimento&<?php if (isset($_GET['txtBuscarAtendimentos'])) {
+                                                                                    echo "&txtBuscarAtendimentos=" . $_GET['txtBuscarAtendimentos'];
+                                                                                }
+                                                                                if (isset($_GET['btnBuscarAtendimentos'])) {
+                                                                                    echo "&btnBuscarAtendimentos=";
+                                                                                } ?>&pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php } ?>
+
+            </ul>
+        </nav>
     </div>
 </div>
 
 <?php
 if (@($_GET['funcao']) == "atender") {
     echo '<script> $("#modalAtender").modal("show"); </script>';
+} elseif (@($_GET['funcao']) == "visualizarAtendimento") {
+    echo '<script> $("#modalVisualizar").modal("show"); </script>';
 }
 
 ?>
