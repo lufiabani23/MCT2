@@ -2,7 +2,6 @@
 <script src="../js/mascaras.js"></script>
 
 <?php
-require_once('../conexao.php');
 include_once('../alerts.php');
 @session_start();
 
@@ -10,9 +9,10 @@ include_once('../alerts.php');
 //O convenio com nome "Particular" é cadastrado automaticamente em AUTENTICAR.PHP
 
 // Buscar por Convenios Cadastrados
-$sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[id_psicologo])");
-$sql->execute();
-$listaconvenios = $sql->fetchALL();
+$sqlBuscarConvenios = $conexao->prepare("SELECT * FROM convenios where (Psicologo = :idPsicologo)");
+$sqlBuscarConvenios->bindParam(':idPsicologo', $_SESSION['id_psicologo']);
+$sqlBuscarConvenios->execute();
+$listaconvenios = $sqlBuscarConvenios->fetchALL();
 
 // Sistema para buscar pacientes
 if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
@@ -102,7 +102,7 @@ if (isset($_POST['btnNovoPaciente'])) {
           }
         }
       }
-      echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+      echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
     } catch (Exception $e) {
       echo $e;
     }
@@ -257,7 +257,7 @@ if (isset($_POST['btnEditarPaciente'])) {
         ':idEditarPaciente' => $idEditarPaciente
       )
     );
-    echo "<script language='javascript'> window.location='index.php?acao=pacientes&alert=success'; </script>";
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   } catch (PDOException $e) {
     echo $e->getMessage();
   }
@@ -289,9 +289,9 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
           </button>
         </div>
         <div class="modal-body">
-          <form id="formModalPaciente" enctype="multipart/form-data" method="POST" action="index.php?acao=pacientes<?php if (isset($idEditarPaciente)) {
-                                                                                                                      echo "&id=$idEditarPaciente";
-                                                                                                                    } ?>">
+          <form id="formModalPaciente" enctype="multipart/form-data" method="POST" action="index.php?acao=<?php echo $item2; ?><?php if (isset($idEditarPaciente)) {
+                                                                                                                                  echo "&id=$idEditarPaciente";
+                                                                                                                                } ?>">
             <div class="form-row">
               <div class="form-group col-md-10 col-sm-12">
                 <label for="Nome">Nome Completo</label>
@@ -460,11 +460,12 @@ if (@($_GET['funcao']) == "excluir") {
           </button>
         </div>
         <div class="modal-body">
-          Você deseja realmente excluir este paciente?
+          Você deseja realmente excluir este paciente? <br>
+          Você irá excluir todos os agendamentos passados deste paciente e todos os registros de atendimento deste paciente.
         </div>
         <div class="modal-footer">
-          <a href="index.php?acao=pacientes" type="button" class="btn btn-dark">Cancelar</a>
-          <a class="btn btn-danger" href="index.php?acao=pacientes&funcao=exclusao&id=<?php echo $idexclusao; ?>">Excluir</a>
+          <a href="index.php?acao=<?php echo $item2; ?>" type="button" class="btn btn-dark">Cancelar</a>
+          <a class="btn btn-danger" href="index.php?acao=<?php echo $item2; ?>&funcao=exclusao&id=<?php echo $idexclusao; ?>">Excluir</a>
         </div>
       </div>
     </div>
@@ -480,47 +481,51 @@ if (@($_GET['funcao']) == "exclusao") {
   $idexclusao = $_GET['id'];
   // Procura atendimentos futuros do paciente
   $dataHoje = date_create()->format("Y-m-d H:i:s");
-  $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
-  $sqlBuscarAtendimentos->bindParam(":id", $idexclusao);
-  $sqlBuscarAtendimentos->bindParam(":dataHoje", $dataHoje);
-  $sqlBuscarAtendimentos->execute();
-  $BuscarAtendimentos = $sqlBuscarAtendimentos->fetchAll(PDO::FETCH_ASSOC);
-  if (count($BuscarAtendimentos) >= 1) {
+  $sqlBuscarAgendamentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
+  $sqlBuscarAgendamentos->bindParam(":id", $idexclusao);
+  $sqlBuscarAgendamentos->bindParam(":dataHoje", $dataHoje);
+  $sqlBuscarAgendamentos->execute();
+  $BuscarAgendamentos = $sqlBuscarAgendamentos->fetchAll(PDO::FETCH_ASSOC);
+  if (count($BuscarAgendamentos) >= 1) {
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
-  } elseif (count($BuscarAtendimentos) < 1) {
+  } elseif (count($BuscarAgendamentos) < 1) {
     // Apaga atendimentos passados
-    $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
+    $sqlApagarAgendamentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
+    $sqlApagarAgendamentos->bindParam(":id", $idexclusao);
+    $sqlApagarAgendamentos->execute();
+
+    $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM atendimento WHERE paciente = :id");
     $sqlApagarAtendimentos->bindParam(":id", $idexclusao);
     $sqlApagarAtendimentos->execute();
-  }
 
-  // Busca a foto do paciente para apagar
-  $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM Paciente where ID = :id");
-  $sqlBuscarFoto->bindParam(":id", $idexclusao);
-  $sqlBuscarFoto->execute();
-  $fotoPaciente = $sqlBuscarFoto->fetchAll(PDO::FETCH_ASSOC);
-  if (isset($fotoPaciente[0]['Foto'])) {
-    unlink($fotoPaciente[0]['Foto']);
-  }
-
-  //Busca anexos do paciente para apagar
-  $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
-  $sqlBuscarAnexos->bindParam(":id", $idexclusao);
-  $sqlBuscarAnexos->execute();
-  $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
-  if (!empty($anexosPaciente)) {
-    foreach ($anexosPaciente as $indice => $linha) {
-      unlink($linha['Anexo']);
+    // Busca a foto do paciente para apagar
+    $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM Paciente where ID = :id");
+    $sqlBuscarFoto->bindParam(":id", $idexclusao);
+    $sqlBuscarFoto->execute();
+    $fotoPaciente = $sqlBuscarFoto->fetchAll(PDO::FETCH_ASSOC);
+    if (isset($fotoPaciente[0]['Foto'])) {
+      unlink($fotoPaciente[0]['Foto']);
     }
-    $sqlApagarAnexo = $conexao->prepare("DELETE FROM Anexos where Paciente = :id");
-    $sqlApagarAnexo->bindParam(":id", $idexclusao);
-    $sqlApagarAnexo->execute();
+
+    //Busca anexos do paciente para apagar
+    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
+    $sqlBuscarAnexos->bindParam(":id", $idexclusao);
+    $sqlBuscarAnexos->execute();
+    $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($anexosPaciente)) {
+      foreach ($anexosPaciente as $indice => $linha) {
+        unlink($linha['Anexo']);
+      }
+      $sqlApagarAnexo = $conexao->prepare("DELETE FROM Anexos where Paciente = :id");
+      $sqlApagarAnexo->bindParam(":id", $idexclusao);
+      $sqlApagarAnexo->execute();
+    }
+    //Apaga Paciente
+    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
+    $sql->bindParam(":id", $idexclusao);
+    $sql->execute();
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   }
-  //Apaga Paciente
-  $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
-  $sql->bindParam(":id", $idexclusao);
-  $sql->execute();
-  echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
 }
 ?>
 
@@ -529,7 +534,7 @@ if (@($_GET['funcao']) == "exclusao") {
 <div class="row mt-1"> <!-- botão alinhado a borda da tabela -->
 
   <div class="col-md-6 col-sm-12">
-    <a href="index.php?acao=pacientes&funcao=novo" class="btn btn-secondary">
+    <a href="index.php?acao=<?php echo $item2; ?>&funcao=novo" class="btn btn-secondary">
       <span style="font-size: 16pt;">+</span> Novo paciente
     </a>
   </div>
@@ -560,7 +565,11 @@ if (@($_GET['funcao']) == "exclusao") {
   </thead>
   <tbody>
     <?php
+    if (($listapacientes == null)) {
+      $nenhumPaciente = "Nenhum paciente encontrado.";
+    } else {
     foreach ($listapacientes as $indice => $linha) {
+      $nenhumPaciente = null;
       if ($linha['Psicologo'] == $_SESSION['id_psicologo']) {
     ?>
         <tr>
@@ -579,12 +588,14 @@ if (@($_GET['funcao']) == "exclusao") {
           </td>
           <td class="d-none d-sm-block"><?php echo $linha['Telefone'] ?></td>
           <td>
-            <a href="index.php?acao=pacientes&funcao=excluir&id=<?php echo $linha['ID']; ?>" class="btn btn-danger mt-1" id="btnExcluir"> Excluir </a>
-            <a href="index.php?acao=pacientes&funcao=editar&id=<?php echo $linha['ID']; ?>" class="btn btn-warning mt-1">Editar</a>
+            <a href="index.php?acao=<?php echo $item2; ?>&funcao=excluir&id=<?php echo $linha['ID']; ?>" class="btn btn-danger mt-1" id="btnExcluir"> Excluir </a>
+            <a href="index.php?acao=<?php echo $item2; ?>&funcao=editar&id=<?php echo $linha['ID']; ?>" class="btn btn-warning mt-1">Editar</a>
           </td>
         </tr>
 
     <?php }
-    } ?>
+    } } ?>
   </tbody>
 </table>
+
+<?php echo $nenhumPaciente; ?>
