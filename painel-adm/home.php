@@ -2,7 +2,7 @@
 @session_start();
 ?>
 
-<div class="bemvindo d-none d-lg-block">
+<div class="bemvindo d-none d-lg-block ml-3">
     <h1>Seja bem-vindo, <?php echo $_SESSION['nome_psicologo']; ?></h1>
 </div>
 
@@ -69,7 +69,7 @@
                         <div class="col-7 col-md-8">
                             <div class="numbers">
                                 <p class="titulo-card">Atendimentos no dia</p>
-                                <p class="subtitulo-card">0
+                                <p class="subtitulo-card"><?php echo $_SESSION['totalAgendamentosHoje']; ?>
                                 <p>
                             </div>
                         </div>

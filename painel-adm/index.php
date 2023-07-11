@@ -3,23 +3,35 @@ $Nnotificacoes = 3;
 require_once('../conexao.php');
 @session_start();
 
+//Se não estiver setado o nome do psicologo ele vai retornar a tela inicial - segurança
 if (!isset($_SESSION['nome_psicologo'])) {
     header("location: ../index.php");
 };
 
-// Busca dos pacientes
+// Busca dos pacientes - array com todos os pacientes
 $pacientes = $conexao->prepare("SELECT * FROM paciente WHERE (Psicologo = $_SESSION[id_psicologo]) order by Nome asc");
 $pacientes->execute();
 $listapacientes = $pacientes->fetchALL();
+$_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
 
+// Busca de todos os agendamentos
 $sqlBuscarAgendamentos = $conexao->prepare("SELECT * FROM agendar WHERE (Psicologo = $_SESSION[id_psicologo])");
 $sqlBuscarAgendamentos->execute();
 $listaAgendamentos = $sqlBuscarAgendamentos->fetchALL();
 $_SESSION['totalAgendamentos'] = count($listaAgendamentos);
-$_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
+
+$datetimeToday = date('Y-m-d');
+
+$sqlBuscarAgendamentosHoje = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio > :dataInicio AND Data_Inicio < :dataFim AND Realizado = 0");
+$sqlBuscarAgendamentosHoje->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
+$sqlBuscarAgendamentosHoje->bindValue(':dataInicio', $datetimeToday . "00:00:00");
+$sqlBuscarAgendamentosHoje->bindValue(':dataFim', $datetimeToday . "23:59:59");
+$sqlBuscarAgendamentosHoje->execute();
+$listaAgendamentosHoje = $sqlBuscarAgendamentosHoje->fetchAll();
+$_SESSION['totalAgendamentosHoje'] = count($listaAgendamentosHoje);
+
 
 //ITENS DO MENU E DAS PAGINAS
-
 $item1 = 'home';
 $item2 = 'pacientes';
 $item3 = 'agenda';
@@ -37,7 +49,7 @@ elseif (@$_GET['acao'] == $item2 or isset($_GET['btnBuscarPacientes']))
     $item2ativo = 'active';
 elseif (@$_GET['acao'] == $item3)
     $item3ativo = 'active';
-elseif (@$_GET['acao'] == $item4 or @$_GET['acao'] == "atendimentosPassados" or isset($_GET['btnBuscarAtendimentos']))
+elseif (@$_GET['acao'] == $item4 or isset($_GET['btnBuscarAtendimentos']))
     $item4ativo = 'active';
 elseif (@$_GET['acao'] == $item5 or isset($_GET[$item5]))
     $item5ativo = 'active';
@@ -67,8 +79,7 @@ else
 
     <link rel="stylesheet" type="text/css" href="../css/painel.css">
 
-    <link rel="shortcut icon" href="../img/favicon/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="../img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
 
     <title>SistemaPsico :: Psicólogo</title>
 </head>
@@ -91,8 +102,8 @@ else
     </nav>
 
     <div class="container-fluid mt-sm-4 row">
-        <div class="col-md-3 col-sm-12">
-            <div class="nav flex-column nav-pills mb-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <div class="col-md-3 col-sm-12 ">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
 
                 <a class="nav-link <?php echo $item1ativo ?>" id="v-pills-home-tab" href="index.php?acao=<?php echo $item1 ?>" role="tab" aria-controls="v-pills-home" aria-selected="true"><i class="bi bi-house-fill mr-3"></i>Home</a>
 
@@ -122,10 +133,8 @@ else
                         include_once($item2 . ".php");
                     elseif (@$_GET['acao'] == $item3)
                         include_once($item3 . ".php");
-                    elseif (@$_GET['acao'] == $item4)
+                    elseif (@$_GET['acao'] == $item4 or isset($_GET['btnBuscarAtendimentos']))
                         include_once($item4 . ".php");
-                    elseif (@$_GET['acao'] == 'atendimentosPassados' or isset($_GET['btnBuscarAtendimentos']))
-                        include_once("atendimentosPassados.php");
                     elseif (@$_GET['acao'] == $item5)
                         include_once($item5 . ".php");
                     elseif (@$_GET['acao'] == $item6)
@@ -146,6 +155,7 @@ else
             <h2>SystemPsi</h2>
             <h6><?php echo $_SESSION['nome_psicologo']; ?> - CRP: <?php echo $_SESSION['CRP_psicologo']; ?></h6>
         </footer>
+    </div>
 
 </body>
 
