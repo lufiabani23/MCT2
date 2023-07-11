@@ -1,5 +1,6 @@
 <?PHP
 include_once('../alerts.php');
+
 // ADICIONAR AGENDAMENTO
 if (isset($_POST['btnNovoAgendamento'])) {
   $nomePaciente = $_POST['NomePaciente'];

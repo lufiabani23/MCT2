@@ -45,7 +45,7 @@
                         <div class="col-7 col-md-8">
                             <div class="numbers">
                                 <p class="titulo-card">Atendimentos na semana</p>
-                                <p class="subtitulo-card"><?php echo $_SESSION['totalAgendamentos']; ?>
+                                <p class="subtitulo-card"><?php echo $_SESSION['totalAgendamentos7']; ?>
                                 <p>
                             </div>
                         </div>
