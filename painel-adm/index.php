@@ -31,14 +31,15 @@ $listaAgendamentos7 = $sqlBuscarAgendamentos7->fetchAll();
 $_SESSION['totalAgendamentos7'] = count($listaAgendamentos7);
 
 
-$sqlBuscarAgendamentosHoje = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio > :dataInicio AND Data_Inicio < :dataFim AND Realizado = 0");
+$datetimeAmanha = date('Y-m-d', strtotime('+1 day'));
+
+$sqlBuscarAgendamentosHoje = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio >= :dataInicio AND Data_Inicio < :dataFim AND Realizado = 0");
 $sqlBuscarAgendamentosHoje->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
-$sqlBuscarAgendamentosHoje->bindValue(':dataInicio', $datetimeToday . "00:00:00");
-$sqlBuscarAgendamentosHoje->bindValue(':dataFim', $datetimeToday . "23:59:59");
+$sqlBuscarAgendamentosHoje->bindValue(':dataInicio', $datetimeToday);
+$sqlBuscarAgendamentosHoje->bindValue(':dataFim', $datetimeAmanha);
 $sqlBuscarAgendamentosHoje->execute();
 $listaAgendamentosHoje = $sqlBuscarAgendamentosHoje->fetchAll();
 $_SESSION['totalAgendamentosHoje'] = count($listaAgendamentosHoje);
-
 
 //ITENS DO MENU E DAS PAGINAS
 $item1 = 'home';

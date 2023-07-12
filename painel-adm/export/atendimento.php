@@ -18,6 +18,8 @@ $convenioPaciente = $dadosPaciente["Convenio"];
                         $sqlBuscarConvenio->execute();
                         $dadosConvenio = $sqlBuscarConvenio->fetch();
 
+$visualizar = true;
+
 ?>
 <head>
 <meta charset="UTF-8">
@@ -56,65 +58,97 @@ $convenioPaciente = $dadosPaciente["Convenio"];
 <h2 class="d-print-none">Feche esta aba para voltar ao sistema!</h2>
 
 <div class="container">
-                    <form id="formModalAtendimento" method="POST">
+<form id="formModalAtendimento" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>?acao=<?php echo $item4; ?>">
                         <div class="row">
-                            <div class="col-2">
+                            <div class="col-md-2 col-sm-12">
                                 <div class=" text-center mt-3">
-                                    <img class="card-img-top foto-paciente " width="200em" src="../<?php echo $dadosPaciente["Foto"]; ?>"> <br><br>
-                                    <h5><?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
-                                        $formatoData = date("d/m", $dataInicio);
-                                        echo $formatoData; ?> <br>
-                                        Início: <?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
-                                        $formatoData = date("H:i", $dataInicio);
-                                        echo $formatoData; ?> <br>
-                                        Termínio: <?php $dataFim = strtotime($dadosAtendimento["Data_Fim"]);
-                                        $formatoData = date("H:i", $dataFim);
-                                        echo $formatoData; ?>
-                                    </h5>
+                                    <?php if (isset($dadosPaciente["Foto"])) { ?>
+                                        <img class="card-img-top foto-paciente " width="200em" src="../<?php echo $dadosPaciente["Foto"]; ?>"> <br><br>
+                                    <?php } ?>
+                                    <?php if ($visualizar == 0) { ?>
+                                        <h5><?php $dataInicio = strtotime($dadosAgendamento["Data_Inicio"]);
+                                            $formatoData = date("d/m - H:i", $dataInicio);
+                                            echo $formatoData; ?></h5>
+                                        </h5>
+                                    <?php } else { ?>
+                                        <h5><?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                                            $formatoData = date("d/m", $dataInicio);
+                                            echo $formatoData; ?> <br>
+                                            Início: <?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                                                    $formatoData = date("H:i", $dataInicio);
+                                                    echo $formatoData; ?> <br>
+                                            Termínio: <?php $dataFim = strtotime($dadosAtendimento["Data_Fim"]);
+                                                        $formatoData = date("H:i", $dataFim);
+                                                        echo $formatoData; ?>
+                                        </h5>
+                                    <?php } ?>
                                 </div>
                             </div>
-                            <div class="col-4">
+                            <div class="col-md-4 col-sm-12">
                                 <h4>Paciente: <?php echo $dadosPaciente["Nome"]; ?></h4>
                                 <h5>Gênero: <?php echo $dadosPaciente["Genero"]; ?></h5>
                                 <h5>Convênio: <?php echo $dadosConvenio["Nome"]; ?></h5>
 
-                                <label for="Prontuario">Prontuário:</label><textarea readonly rows="4" id="Prontuario" class="form-control"><?php echo $dadosPaciente["Prontuario"]; ?></textarea>
+                                <label for="Prontuario">Prontuário:</label><textarea readonly rows="4" id="Prontuario" class="form-control auto-resize"><?php echo $dadosPaciente["Prontuario"]; ?></textarea>
 
                                 <label for="Motivo">Motivo:</label>
-                                <textarea class="form-control" id="Motivo" name="Motivo" readonly><?php echo $dadosAtendimento["Motivo"]; ?></textarea>
+                                <textarea class="form-control auto-resize" id="Motivo" <?php if ($visualizar == 1) {
+                                                                                echo "readonly";
+                                                                            } ?> name="Motivo"><?php if ($visualizar == 1) {
+                                                                                                                                                    echo $dadosAtendimento["Motivo"];
+                                                                                                                                                } else {
+                                                                                                                                                    echo $dadosAgendamento["Motivo"];
+                                                                                                                                                } ?></textarea>
 
                             </div>
-                            <div class="col-5">
+                            <div class="col-md-5 col-sm-12">
                                 <label for="Registro">Registro:</label>
-                                <textarea class="form-control" id="Registro" rows="13" name="Registro" readonly><?php echo $dadosAtendimento["Registro"]; ?></textarea>
+                                <textarea class="form-control auto-resize" id="Registro" <?php echo $visualizar == 1 ? "readonly" : "" ?> rows="13" name="Registro"><?php echo $visualizar == 1 ? $dadosAtendimento["Registro"] : "" ?></textarea>
                             </div>
                         </div>
+
                         <div class="row">
-                            <div class="col-2"></div>
-                            <div class="col-4">
-                                <label for="Valor">Valor:</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">R$</div>
-                                        <input readonly type="number" id="Valor" style="width: 16em;" name="Valor" class="form-control" placeholder="Valor do Atendimento" value="<?php echo $dadosAtendimento['Valor']; ?>">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-12 col-5">
+                                        <label for="Valor">Valor:</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">R$</div>
+                                            </div>
+                                            <input type="number" id="Valor" name="Valor" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> placeholder="Valor do Atendimento" value="<?php echo $visualizar == 1 ? $dadosAtendimento["Valor"] : $dadosAgendamento['Valor']; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 col-7">
+                                        <label for="FormaPGTO">Forma de Pagamento:</label>
+                                        <select class="form-control" id="FormaPGTO" <?php echo $visualizar == 1 ? "readonly" : "" ?> name="FormaPGTO">
+                                            <?php if ($visualizar == 0) { ?>
+                                                <option>Dinheiro</option>
+                                                <option>PIX</option>
+                                                <option>Boleto</option>
+                                                <option>Transferência Bancária</option>
+                                                <option>Cartão crédito/débito</option>
+                                                <option>Outro</option>
+                                            <?php } else { ?>
+                                                <option><?php echo $dadosAtendimento["Forma_Pgto"]; ?></option>
+                                            <?php } ?>
+
+                                        </select>
                                     </div>
                                 </div>
-                                <label for="FormaPGTO">Forma de Pagamento:</label>
-                                <select class="form-control" id="FormaPGTO" name="FormaPGTO" disabled>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Dinheiro") echo "selected"; ?>>Dinheiro</option>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "PIX") echo "selected"; ?>>PIX</option>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Boleto") echo "selected"; ?>>Boleto</option>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Transferência Bancária") echo "selected"; ?>>Transferência Bancária</option>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Cartão crédito/débito") echo "selected"; ?>>Cartão crédito/débito</option>
-                                    <option <?php if ($dadosAtendimento["Forma_Pgto"] == "Outro") echo "selected"; ?>>Outro</option>
-                                </select>
                             </div>
 
-                            <div class="col-5">
+                            <div class="col-md-5 col-sm-12">
                                 <label for="OBS">OBS.</label>
-                                <textarea rows="4" class="form-control" id="OBS" name="OBS" readonly><?php echo $dadosAtendimento["OBS"]; ?></textarea>
+                                <textarea rows="4" class="form-control auto-resize" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS" name="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento["OBS"] : $dadosAgendamento['OBS.']; ?></textarea>
                             </div>
                         </div>
+
+
+                        <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
+                        <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
+                        <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>">
 
                     </form>
 </div>
@@ -140,17 +174,21 @@ $hoje = date('d/m/Y' . " - " . 'H:i'); echo $hoje ?>
 
 
 <script>
-window.print();
+    window.print();
+
     // Função para redimensionar a altura do textarea
     function resizeTextarea() {
-        const textarea = document.getElementById('Prontuario');
-        textarea.style.height = 'auto'; // Redefine a altura para recalcular corretamente
-        textarea.style.height = textarea.scrollHeight + 'px'; // Define a altura com base no conteúdo
+        const textareas = document.querySelectorAll('.auto-resize');
+        textareas.forEach((textarea) => {
+            textarea.style.height = 'auto'; // Redefine a altura para recalcular corretamente
+            textarea.style.height = textarea.scrollHeight + 'px'; // Define a altura com base no conteúdo
+        });
     }
 
-    // Chama a função inicialmente para redimensionar o textarea
+    // Chama a função inicialmente para redimensionar os textareas
     resizeTextarea();
 </script>
+
 
 
 </body>
