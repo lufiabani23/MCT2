@@ -426,7 +426,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
         <div class="modal-footer">
           <?php if (isset($idEditarPaciente)) { ?>
             <div class="text-left mr-auto">
-              <a form="formModalPaciente" class="btn btn-warning text-white" href="export/paciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Exportar</a>
+              <a form="formModalPaciente" class="btn btn-warning text-white" href="export/paciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Imprimir</a>
             </div>
           <?php } ?>
           <button form="formModalPaciente" type="submit" class="btn btn-success" name="<?php echo ($_GET['funcao'] == 'editar') ? 'btnEditarPaciente' : 'btnNovoPaciente'; ?>"><?php echo ($_GET['funcao'] == 'editar') ? 'Editar' : 'Cadastrar'; ?></button>
