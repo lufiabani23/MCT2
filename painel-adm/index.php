@@ -3,6 +3,15 @@ $Nnotificacoes = 3;
 require_once('../conexao.php');
 @session_start();
 
+$result = $conexao->prepare("SELECT * from psicologo where ID = $_SESSION[id_psicologo] ");
+$result->execute();
+$dados = $result->fetchAll(PDO::FETCH_ASSOC);
+
+$_SESSION['CRP_psicologo'] = $dados[0]['CRP'];
+$_SESSION['nome_psicologo'] = $dados[0]['Nome'];
+$_SESSION['email_psicologo'] = $dados[0]['Email'];
+$_SESSION['senha_psicologo'] = $dados[0]['Senha'];
+
 //Se não estiver setado o nome do psicologo ele vai retornar a tela inicial - segurança
 if (!isset($_SESSION['nome_psicologo'])) {
     header("location: ../index.php");
