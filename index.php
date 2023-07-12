@@ -31,11 +31,11 @@
                 Entre no Sistema
             </h2>
             <div class="form-group">
-                <input class="form-control mb-2" type="email" name="usuario" placeholder="Insira seu e-mail" value="tainafiabani@gmail.com" required>
+                <input class="form-control mb-2" type="email" name="usuario" placeholder="Insira seu e-mail" value="" required>
             </div>
 
             <div class="form-group">
-                <input class="form-control mb-2" type="password" name="senha" placeholder="Insira sua senha" value="tainalinda" required>
+                <input class="form-control mb-2" type="password" name="senha" placeholder="Insira sua senha" value="" required>
             </div>
 
             <div class="form-group d-grid gap-2">
