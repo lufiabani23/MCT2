@@ -46,7 +46,7 @@ body {
 
 h1 {
     text-align: left;
-    margin-left: 0.5em;
+
 }
 
 /*FORMATAÇÕES DO RODAPÉ*/
@@ -167,7 +167,7 @@ div.modal-paciente img.foto-paciente{
 
 
 
-/* FORMATAÇÕES CARD ATENDIMENTO */
+/* FORMATAÇÕES CARD NOVO ATENDIMENTO */
 
 
 a.card-atendimento {
@@ -243,6 +243,82 @@ div.card-atendimento h2 {
     max-height: 4em; /* Altura máxima para duas linhas de texto */
 }
 
+
+
+
+
+div.card-realizado a.card-atendimento {
+    text-decoration: none;
+}
+
+div.card-realizado .card-atendimento {
+    width: 20em;
+}
+
+
+div.card-realizado div.card-atendimento-body {
+    background-color: gray !important;
+    height: 10em;
+    border-radius: 5%;
+    overflow: hidden;
+}
+
+div.card-realizado a.card-atendimento::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 300ms;
+    border-radius: 5%;
+}
+
+div.card-realizado a.card-atendimento::after {
+    content: "Visualizar informações";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 300ms;
+}
+
+div.card-realizado a.card-atendimento:hover::before,
+div.card-realizado a.card-atendimento:hover::after {
+    opacity: 1;
+}
+
+
+div.card-realizado img.foto-paciente{
+    width: 7em;
+    height: 7em;
+    border-radius: 50%;
+    box-shadow: 0px 2px 2px #005257;
+    margin-top: 1em;
+    object-fit: cover;
+}
+
+div.card-realizado a.card-atendimento h2, a.card-atendimento h5 {
+    color: white;
+}
+
+div.card-realizado div.card-atendimento h2 {
+    font-size: 1.5em ;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4em; /* Altura máxima para duas linhas de texto */
+}
 
 
 

@@ -7,6 +7,11 @@ $sqlBuscarPaciente = $conexao -> prepare("SELECT * from paciente where id = $idP
 $sqlBuscarPaciente -> execute();
 $dadosPaciente = $sqlBuscarPaciente -> fetchAll(PDO::FETCH_ASSOC);
 
+// Buscar por Convenios Cadastrados
+$sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[id_psicologo])");
+$sql->execute();
+$listaconvenios = $sql->fetchALL();
+
 ?>
 <head>
 <meta charset="UTF-8">
@@ -29,7 +34,7 @@ $dadosPaciente = $sqlBuscarPaciente -> fetchAll(PDO::FETCH_ASSOC);
 
 <body>
 
-<div class="relatorio">
+<div class="relatorio d-none d-print-block">
     <div class="row">
         <div class="col-4">
         <div class="col-sm-12 col-lg-6"><img class="relatorio" src="../../img/logosistemapsico.png"></div>
@@ -38,12 +43,11 @@ $dadosPaciente = $sqlBuscarPaciente -> fetchAll(PDO::FETCH_ASSOC);
         <h1 class="mt-5">RELATÓRIO DE PACIENTE</h1>
         </div>
     </div>
-
 </div>
 
+<h2 class="d-print-none">Feche esta aba para voltar ao sistema!</h2>
 
 <div class="container">
-
     <form id="formModalPaciente" enctype="multipart/form-data" method="POST" action="index.php?acao=pacientes<?php if (isset($dadosPaciente)) {
                                                                                                                       echo "&id=$dadosPaciente";
                                                                                                                     } ?>">
@@ -159,16 +163,17 @@ function tabClose() {
 </script>
 
 
-<footer class="relatorio">
+<footer class="relatorio d-none d-print-block">
 <?php
 date_default_timezone_set('America/Sao_Paulo');
 $hoje = date('d/m/Y' . " - " . 'H:i'); echo $hoje ?>
   <hr>
             <h2>SystemPsi</h2>
             <h6><?php echo $_SESSION['nome_psicologo']; ?> - CRP: <?php echo $_SESSION['CRP_psicologo']; ?></h6>
-        </footer>
-<script>
+</footer>
 
+
+<script>
 window.print();
     // Função para redimensionar a altura do textarea
     function resizeTextarea() {
@@ -179,8 +184,6 @@ window.print();
 
     // Chama a função inicialmente para redimensionar o textarea
     resizeTextarea();
-
-
 </script>
 
 

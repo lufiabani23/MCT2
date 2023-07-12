@@ -270,10 +270,11 @@ if (isset($_POST['btnEditarPaciente'])) {
 if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
   if (isset($_GET['id'])) {
     $idEditarPaciente = $_GET['id'];
-    $sqlEditarPaciente =  $conexao->query("SELECT * from Paciente where(ID = $idEditarPaciente)");
+    $sqlEditarPaciente =  $conexao->prepare("SELECT * from paciente where(ID = $idEditarPaciente)");
+    $sqlEditarPaciente -> execute();
     $dadosEditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
     //Busca anexos do paciente para listar
-    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
+    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM anexos where Paciente = :id");
     $sqlBuscarAnexos->bindParam(":id", $idEditarPaciente);
     $sqlBuscarAnexos->execute();
     $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
@@ -499,7 +500,7 @@ if (@($_GET['funcao']) == "exclusao") {
     $sqlApagarAtendimentos->execute();
 
     // Busca a foto do paciente para apagar
-    $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM Paciente where ID = :id");
+    $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM paciente where ID = :id");
     $sqlBuscarFoto->bindParam(":id", $idexclusao);
     $sqlBuscarFoto->execute();
     $fotoPaciente = $sqlBuscarFoto->fetchAll(PDO::FETCH_ASSOC);
@@ -508,7 +509,7 @@ if (@($_GET['funcao']) == "exclusao") {
     }
 
     //Busca anexos do paciente para apagar
-    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM Anexos where Paciente = :id");
+    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM anexos where Paciente = :id");
     $sqlBuscarAnexos->bindParam(":id", $idexclusao);
     $sqlBuscarAnexos->execute();
     $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
@@ -516,7 +517,7 @@ if (@($_GET['funcao']) == "exclusao") {
       foreach ($anexosPaciente as $indice => $linha) {
         unlink($linha['Anexo']);
       }
-      $sqlApagarAnexo = $conexao->prepare("DELETE FROM Anexos where Paciente = :id");
+      $sqlApagarAnexo = $conexao->prepare("DELETE FROM anexos where Paciente = :id");
       $sqlApagarAnexo->bindParam(":id", $idexclusao);
       $sqlApagarAnexo->execute();
     }

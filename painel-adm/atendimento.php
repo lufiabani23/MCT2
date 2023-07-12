@@ -422,16 +422,12 @@ foreach ($atendimentosPagina as $linha) {
                             </div>
                         </div>
 
-                        <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
-                        <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
-                        <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>">
-
                     </form>
                 <?php } ?>
             </div>
             <div class="modal-footer">
                 <div class="text-left mr-auto">
-                    <a form="formModalPaciente" class="btn btn-warning text-white" href="export/atendimento.php?idAtendimento=<?php echo $dadosAtendimento["ID"]; ?>" target="_blank">Exportar</a>
+                    <a form="formModalPaciente" class="btn btn-warning text-white" href="export/atendimento.php?idAtendimento=<?php if (isset($dadosAtendimento["ID"])) { echo $dadosAtendimento["ID"]; } ?>" target="_blank">Exportar</a>
                 </div>
                 <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item4 ?>">Fechar</button>
             </div>

@@ -16,7 +16,6 @@
     <link rel="stylesheet" type="text/css" href="css/login.css">
 
     <link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
 
     <title>SistemaPsico</title>
 </head>
@@ -68,7 +67,7 @@
                 <div class="modal-body">
                     Esqueceu sua senha? <br>
                     Entre em contato com o suporte e recupere. <br>
-                    E-mail: <a href="mailto:suporte.sistemapsico@gmail.com">suporte.sistemapsico@gmail.com</a> <br>
+                    E-mail: <a href="mailto:luisfiabani@gmail.com">luisfiabani@gmail.com</a> <br>
                     Atendimento de segunda à sexta das 08h às 17h.
                 </div>
                 <div class="modal-footer">

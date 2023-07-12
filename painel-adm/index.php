@@ -52,22 +52,32 @@ $novopsi = 'novopsi';
 
 //Verificar qual o menu clicado
 
-if (@$_GET['acao'] == $item1)
+$item1ativo = ''; // Inicializa a variável $item1ativo
+$item2ativo = ''; // Inicializa a variável $item2ativo
+$item3ativo = ''; // Inicializa a variável $item3ativo
+$item4ativo = ''; // Inicializa a variável $item4ativo
+$item5ativo = ''; // Inicializa a variável $item5ativo
+$item6ativo = ''; // Inicializa a variável $item6ativo
+$suporteativo = ''; // Inicializa a variável $suporteativo
+
+if (@$_GET['acao'] == $item1) {
     $item1ativo = 'active';
-elseif (@$_GET['acao'] == $item2 or isset($_GET['btnBuscarPacientes']))
+} elseif (@$_GET['acao'] == $item2 or isset($_GET['btnBuscarPacientes'])) {
     $item2ativo = 'active';
-elseif (@$_GET['acao'] == $item3)
+} elseif (@$_GET['acao'] == $item3) {
     $item3ativo = 'active';
-elseif (@$_GET['acao'] == $item4 or isset($_GET['btnBuscarAtendimentos']))
+} elseif (@$_GET['acao'] == $item4 or isset($_GET['btnBuscarAtendimentos'])) {
     $item4ativo = 'active';
-elseif (@$_GET['acao'] == $item5 or isset($_GET[$item5]))
+} elseif (@$_GET['acao'] == $item5 or isset($_GET[$item5])) {
     $item5ativo = 'active';
-elseif (@$_GET['acao'] == $item6)
+} elseif (@$_GET['acao'] == $item6) {
     $item6ativo = 'active';
-elseif (@$_GET['acao'] == $suporte)
+} elseif (@$_GET['acao'] == $suporte) {
     $suporteativo = 'active';
-else
+} else {
     $item1ativo = 'active';
+}
+
 
 ?>
 
@@ -111,7 +121,7 @@ else
     </nav>
 
     <div class="container-fluid mt-sm-4 row">
-        <div class="col-md-3 col-sm-12 ">
+        <div class="col-md-3 col-sm-12 mb-3 ">
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
 
                 <a class="nav-link <?php echo $item1ativo ?>" id="v-pills-home-tab" href="index.php?acao=<?php echo $item1 ?>" role="tab" aria-controls="v-pills-home" aria-selected="true"><i class="bi bi-house-fill mr-3"></i>Home</a>
