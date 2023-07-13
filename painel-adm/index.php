@@ -7,6 +7,7 @@ $result = $conexao->prepare("SELECT * from psicologo where ID = $_SESSION[id_psi
 $result->execute();
 $dados = $result->fetchAll(PDO::FETCH_ASSOC);
 
+$_SESSION['id_psicologo'] = $dados[0]['ID'];
 $_SESSION['CRP_psicologo'] = $dados[0]['CRP'];
 $_SESSION['nome_psicologo'] = $dados[0]['Nome'];
 $_SESSION['email_psicologo'] = $dados[0]['Email'];

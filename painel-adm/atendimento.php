@@ -229,7 +229,7 @@ foreach ($atendimentosPagina as $linha) {
             <div class="modal-body">
                 <?php
 
-                if ($_GET['funcao'] == "visualizarAtendimento") {
+                if (isset($_GET['funcao']) and $_GET['funcao'] == "visualizarAtendimento") {
                     $visualizar = true;
                     try {
                         $idPaciente = $_GET["idPaciente"];
@@ -254,7 +254,7 @@ foreach ($atendimentosPagina as $linha) {
                 } else {
                     $visualizar = false;
                 }
-                if ($_GET['funcao'] == "atender") {
+                if (isset($_GET['funcao']) and $_GET['funcao'] == "atender") {
                     try {
                         $idPaciente = $_GET["idPaciente"];
                         $idAgendamento = $_GET["idAgendamento"];
@@ -377,7 +377,7 @@ foreach ($atendimentosPagina as $linha) {
 
                         <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
                         <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
-                        <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>">
+                        <?php if ($visualizar = 0) { ?><input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>"> <?php } ?>
 
                     </form>
                 <?php } ?>

@@ -1,8 +1,8 @@
 <?php
 
 @session_start();
+unset($_SESSION['nome_psicologo']);
 @session_destroy();
-unset($_Session['nome_psicologo']);
 header ('location:index.php');
 ?>
 
