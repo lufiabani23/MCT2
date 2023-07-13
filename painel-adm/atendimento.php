@@ -377,7 +377,7 @@ foreach ($atendimentosPagina as $linha) {
 
                         <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
                         <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
-                        <?php if ($visualizar = 0) { ?><input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>"> <?php } ?>
+                        <?php if ($visualizar == 0) { ?><input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>"> <?php } ?>
 
                     </form>
                 <?php } ?>
@@ -388,7 +388,7 @@ foreach ($atendimentosPagina as $linha) {
                     <div class="text-left mr-auto">
                         <a form="formModalPaciente" class="btn btn-warning text-white" href="export/atendimento.php?idAtendimento=<?php if (isset($dadosAtendimento["ID"])) {
                                                                                                                                         echo $dadosAtendimento["ID"];
-                                                                                                                                    } ?>" target="_blank">Imprimir</a>
+                                                                                                                                    } ?>" target="_blank">Imprimir Relatório</a>
                     </div>
                 <?php } ?>
 

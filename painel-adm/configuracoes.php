@@ -34,6 +34,9 @@ if (isset($_POST['btnEditarPsicologo'])) {
 
     $sqlEditarPsicologo = $conexao -> prepare ("UPDATE psicologo set Nome = ?, Email = ?, CRP = ?, Senha = ? WHERE ID = ?");
     $sqlEditarPsicologo -> execute(array($nomePsicologo, $emailPsicologo, $CRPPsicologo, $senhaSQL, $_SESSION['id_psicologo']));
+    echo "<script language='javascript'> window.alert('Dados alterados com sucesso!'); </script>";
+    echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
+
 }
 
 
