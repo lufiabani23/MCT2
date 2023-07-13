@@ -43,10 +43,12 @@
             </div>
 
             <div class="clearfix">
+                <!--
                 <label class="float-left checkbox-inline">
                     <input type="checkbox">
                     Lembrar-me
                 </label>
+-->
                 <a data-toggle="modal" data-target="#modalExemplo" class="float-right">
                     Recuperar senha
                 </a>
