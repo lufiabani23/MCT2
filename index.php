@@ -50,7 +50,7 @@
                 </label>
 -->
                 <a data-toggle="modal" data-target="#modalExemplo" class="float-right">
-                    Recuperar senha
+                    Recuperar senha!
                 </a>
 
             </div>
