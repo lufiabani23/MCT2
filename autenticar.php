@@ -36,13 +36,6 @@ if ($linhas > 0 and $linhas < 2) {
         $sqlInserirParticular->execute();
     }
 
-    $sqlFormaPGTO = $conexao->prepare("SELECT * FROM forma_pgto WHERE (Psicologo = $_SESSION[id_psicologo] and Nome = 'Dinheiro')");
-    $sqlFormaPGTO->execute();
-    $listaPGTO = $sqlFormaPGTO->fetchAll(PDO::FETCH_ASSOC);
-    if (count($listaPGTO) < 1) {
-        $sqlInserirDinheiro = $conexao->prepare("INSERT INTO forma_pgto (Nome,Psicologo) VALUE ('Dinheiro','$_SESSION[id_psicologo]')");
-        $sqlInserirDinheiro->execute();
-    }
     header("location:painel-adm/index.php");
 } else {
     echo "<script language='javascript'> window.alert('Dados Incorretos.'); </script>";
