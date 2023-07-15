@@ -1,3 +1,8 @@
+<?php
+
+include_once ('conexao.php');
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -49,13 +54,15 @@
                     Lembrar-me
                 </label>
 -->
-                <a data-toggle="modal" data-target="#modalExemplo" class="float-right">
+                <a data-toggle="modal" data-target="#modalRecuperarSenha" class="float-right">
                     Recuperar senha!
                 </a>
 
             </div>
         </form>
     </div>
+
+    <!-- MODAL BACKUP RECUPERAÇÃO DE SENHA -->
 
     <div class="modal fade" id="modalExemplo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -79,6 +86,84 @@
         </div>
     </div>
 
-</body>
+    <!-- Modal de RECUPERAÇÃO DE SENHA VIA E-MAIL-->
+    <div class="modal fade" id="modalRecuperarSenha" tabindex="-1" role="dialog" aria-labelledby="modalRecuperarSenha" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRecuperarSenha">RECUPERAR SENHA</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="" method="POST" id="formRecuperarSenha">
+                        <label for="emailRecuperar">Seu e-mail de acesso:</label>
+                        <input type="email" name="emailRecuperar" class="form-control" name="emailRecuperar" placeholder="Digite seu e-mail" required>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                    <button form="formRecuperarSenha" type="submit" name="btnRecuperarSenha" class="btn btn-primary">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+
+</body>
 </html>
+
+<?php
+if (isset($_POST['btnRecuperarSenha'])) {
+    $emailRecuperar = $_POST['emailRecuperar'];
+
+    $sqlVerificaEmail = $conexao->prepare("SELECT * FROM psicologo WHERE Email = :email");
+    $sqlVerificaEmail->bindParam(':email', $emailRecuperar);
+    $sqlVerificaEmail->execute();
+    $resultadoEmail = $sqlVerificaEmail->fetchAll();
+    $nomeRecuperar = $resultadoEmail[0]['Nome'];
+    $idRecuperar = $resultadoEmail[0]['ID'];
+
+    echo $resultadoEmail['Nome'];
+
+    if (count($resultadoEmail) > 0) {
+        $to = $emailRecuperar;
+        $subject = "Recuperação de Senha - SytemPsi";
+        $message = " <h1>Recuperação de Senha - SystemPsi</h1>
+        <h3>Olá, $nomeRecuperar. Tudo bem?</h3> <br><br>
+
+        Você solicitou a alteração da senha de acesso ao SystemPsi. <br>
+        Caso você não tenha feito esta solicitação, ignore esta mensagem! <br><br>
+
+        Para alterar sua senha, acesse este link e faça a alteração. " . '<a href="systempsi.xyz/recuperarSenha.php?id='."$idRecuperar".'">Alterar Senha</a>' . "<br>
+        Para acessar ao sistema, ". '<a href="systempsi.xyz">clique aqui.</a>' . "<br><br>
+
+        Caso tenha alguma dificuldade para fazer o acesso ao sistema, responda este e-mail com a sua dúvida. <br> <br>
+
+        <h5>SystemPsi</h5>
+        ";
+
+        $remetente = "contato@systempsi.xyz";
+        $headers = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+        $headers .= "From: " . $remetente;
+
+        if (mail($to, $subject, $message, $headers)) {
+            echo "<script language='javascript'>alert('E-mail enviado com sucesso.');</script>";
+        } else {
+            echo "<script language='javascript'>alert('Ocorreu um erro ao enviar o e-mail.');</script>";
+        }
+    } else {
+        echo "<script language='javascript'>alert('Este e-mail não está cadastrado.');</script>";
+        echo "<script language='javascript'>window.location='index.php';</script>";
+    }
+}
+
+
+
+// CÓDIGO DO EMAIL
+
+
+
+?>
