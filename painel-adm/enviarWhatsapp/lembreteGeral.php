@@ -60,7 +60,7 @@ Horário: " . date('H:i', strtotime($agendamento['Data_Inicio'])) .
 
 "
 
-Em caso de dúvidas, alteração do horário ou cancelamento, entre em contato com o *Psicólogo " .  $psicologo['Nome'] . "*, através do link https://api.whatsapp.com/send?phone=". formatarTelefone($psicologo['Telefone']) . "
+Em caso de dúvidas, confirmação do agendamento, alteração do horário ou cancelamento, entre em contato com o *Psicólogo " .  $psicologo['Nome'] . "*, através do link https://api.whatsapp.com/send?phone=". formatarTelefone($psicologo['Telefone']) . "
 
 
 _-MENSAGEM AUTOMÁTICA- favor não responder_
@@ -105,6 +105,7 @@ try {
         if (count($agendamentos) > 0) {
             // Loop para adicionar os agendamentos ao resumo
             foreach ($agendamentos as $agendamento) {
+                $telefonePsicologo = formatarTelefone($psicologo['Telefone']);
                 $idPaciente = $agendamento['Paciente'];
 
                 // Consulta para obter as informações do paciente
@@ -120,23 +121,20 @@ try {
                 $mensagemPsicologo .= "Paciente: " . $paciente['Nome'] . "\n";
                 $mensagemPsicologo .= "Horário: " . $horarioAgendamento . "\n";
                 $mensagemPsicologo .= "Motivo: " . $agendamento['Motivo'] . "\n";
-                $mensagemPsicologo .= "OBS.: " . $agendamento['OBS.'] . "\n\n
-
-_-MENSAGEM AUTOMÁTICA- favor não responder_
-_*SystemPsi* - Seu consultório na palma da sua mão!_";
+                $mensagemPsicologo .= "OBS.: " . $agendamento['OBS.'] . "\n\n";
             }
-        } else {
             $mensagemPsicologo .= "
-*Você não possui agendamentos para hoje*.\n\n
-            
+
+Todos os pacientes agendados para hoje foram devidamente avisados por meio do WhatsApp. Em caso de alguma alteração ou necessidade de contato, por favor, entre em contato diretamente com eles. Agradecemos sua atenção e disponibilidade em utilizar o SystemPsi para uma experiência ainda mais eficiente. Estamos à disposição para qualquer suporte necessário.
+
+
 _-MENSAGEM AUTOMÁTICA- favor não responder_
 _*SystemPsi* - Seu consultório na palma da sua mão!_";
-        }
-
         // Substitua "sua_api_whatsapp" pela função ou método da sua API para enviar a mensagem pelo WhatsApp
-        enviarMensagemWhatsApp($psicologo['Telefone'], $mensagemPsicologo);
+        enviarMensagemWhatsApp($telefonePsicologo, $mensagemPsicologo);
+        }
     }
-} catch (PDOException $e) {
+}catch (PDOException $e) {
     echo "Erro ao conectar ao banco de dados: " . $e->getMessage();
 }
 

@@ -270,12 +270,6 @@ foreach ($atendimentosPagina as $linha) {
                         $sqlBuscarConvenio->execute();
                         $dadosConvenio = $sqlBuscarConvenio->fetch();
 
-
-                        $sqlBuscarPGTO = $conexao->prepare("SELECT * FROM forma_pgto WHERE (Psicologo = $_SESSION[id_psicologo])");
-                        $sqlBuscarPGTO->execute();
-                        $formasPGTO = $sqlBuscarPGTO->fetchAll();
-
-
                         $sqlBuscarAgendamento = $conexao->prepare("SELECT * FROM agendar WHERE (ID = $idAgendamento)");
                         $sqlBuscarAgendamento->execute();
                         $dadosAgendamento = $sqlBuscarAgendamento->fetch();

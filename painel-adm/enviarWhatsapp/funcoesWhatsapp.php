@@ -3,9 +3,9 @@
 function enviarMensagemWhatsApp ($telefone , $mensagem){
 $url = "http://api.enviame.com.br/send-text";
 
-  $data = array('instance' => "BUH3JA207",
-                'to' => "5551992825316", //$telefone
-                'token' => '563L0-30Y-0464G',
+  $data = array('instance' => "GWBNMJ209",
+                'to' => "$telefone", //$telefone
+                'token' => '65KI4-5H9-2551D',
                 'message' => "$mensagem");
 
   $options = array('http' => array(
