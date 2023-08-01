@@ -2,7 +2,7 @@
 @session_start();
 ?>
 
-<div class="bemvindo d-none d-lg-block ml-3">
+<div class="bemvindo d-none d-lg-block ml-4">
     <h1>Seja bem-vindo, <?php echo $_SESSION['nome_psicologo']; ?></h1>
 </div>
 

@@ -136,7 +136,7 @@ foreach ($atendimentosPagina as $linha) {
 }
 ?>
 
-<h1>Próximos atendimentos</h1>
+<h1 class="ml-2">Próximos atendimentos</h1>
 <div class="row">
     <?php if (count($listaAgendamentos) > 0) { ?>
         <?php foreach ($listaAgendamentos as $indice => $linha) { ?>
@@ -170,7 +170,7 @@ foreach ($atendimentosPagina as $linha) {
     <?php } ?>
 </div>
 
-<h1>Atendimentos realizados</h1>
+<h1 class="ml-2">Atendimentos realizados</h1>
 
 
 <div class="row mb-1">
