@@ -44,7 +44,7 @@
                         </div>
                         <div class="col-7 col-md-8">
                             <div class="numbers">
-                                <p class="titulo-card">Atendimentos na semana</p>
+                                <p class="titulo-card">Atendimentos da semana</p>
                                 <p class="subtitulo-card"><?php echo $_SESSION['totalAgendamentos7']; ?>
                                 <p>
                             </div>
@@ -68,7 +68,7 @@
                         </div>
                         <div class="col-7 col-md-8">
                             <div class="numbers">
-                                <p class="titulo-card">Atendimentos no dia</p>
+                                <p class="titulo-card">Atendimentos do dia</p>
                                 <p class="subtitulo-card"><?php echo $_SESSION['totalAgendamentosHoje']; ?>
                                 <p>
                             </div>

@@ -347,10 +347,10 @@ foreach ($atendimentosPagina as $linha) {
                                         <label for="FormaPGTO">Forma de Pagamento:</label>
                                         <select class="form-control" id="FormaPGTO" <?php echo $visualizar == 1 ? "readonly" : "" ?> name="FormaPGTO">
                                             <?php if ($visualizar == 0) { ?>
-                                                <option>Dinheiro</option>
                                                 <option>PIX</option>
+                                                <option>Tranferência Bancária</option>
                                                 <option>Boleto</option>
-                                                <option>Transferência Bancária</option>
+                                                <option>Dinheiro</option>
                                                 <option>Cartão crédito/débito</option>
                                                 <option>Outro</option>
                                             <?php } else { ?>
