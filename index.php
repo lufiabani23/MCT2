@@ -1,6 +1,7 @@
 <?php
 
-include_once ('conexao.php');
+include ('config.php');
+$conexao = conectar();
 ?>
 
 <!DOCTYPE html>
@@ -125,7 +126,7 @@ if (isset($_POST['btnRecuperarSenha'])) {
     $nomeRecuperar = $resultadoEmail[0]['Nome'];
     $idRecuperar = $resultadoEmail[0]['ID'];
 
-    echo $resultadoEmail['Nome'];
+    echo $resultadoEmail[0]['Nome'];
 
     if (count($resultadoEmail) > 0) {
         $to = $emailRecuperar;

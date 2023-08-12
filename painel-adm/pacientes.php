@@ -9,38 +9,23 @@ include_once('../alerts.php');
 //O convenio com nome "Particular" é cadastrado automaticamente em AUTENTICAR.PHP
 
 // Buscar por Convenios Cadastrados
-$sqlBuscarConvenios = $conexao->prepare("SELECT * FROM convenios where (Psicologo = :idPsicologo)");
-$sqlBuscarConvenios->bindParam(':idPsicologo', $_SESSION['id_psicologo']);
-$sqlBuscarConvenios->execute();
-$listaconvenios = $sqlBuscarConvenios->fetchALL();
+$where = "Psicologo = $_SESSION[id_psicologo]";
+$listaconvenios = select('convenios', $where);
 
 // Sistema para buscar pacientes
 if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
   $txtBuscarPaciente = "%" . $_GET['txtBuscarPacientes'] . "%";
-  $sqlBuscarPacientes = $conexao->prepare("SELECT * FROM paciente where Nome like '$txtBuscarPaciente' order by Nome asc");
-  $sqlBuscarPacientes->execute();
-  $listapacientes = $sqlBuscarPacientes->fetchALL();
+  $where = "Nome like '$txtBuscarPaciente' order by Nome asc";
+  $listapacientes = select('paciente', $where);
 } else {
-  $sqlBuscarPacientes = $conexao->prepare("SELECT * FROM paciente order by Nome asc");
-  $sqlBuscarPacientes->execute();
-  $listapacientes = $sqlBuscarPacientes->fetchALL();
+  $where = "Psicologo = $_SESSION[id_psicologo] order by Nome asc";
+  $listapacientes = select('paciente', $where);
 }
 ?>
 
 <?php
 //INSERIR NOVO PACIENTE
 if (isset($_POST['btnNovoPaciente'])) {
-
-  $nome = $_POST['Nome'];
-  $telefone = $_POST['Telefone'];
-  $email = $_POST['Email'];
-  $nascimento = $_POST['Nascimento'];
-  $convenio = $_POST['Convenio'];
-  $CPF = $_POST['CPF'];
-  $genero = $_POST['Genero'];
-  $prontuario = $_POST['Prontuario'];
-  $endereco = $_POST['Endereco'];
-
   if (!empty($_FILES['Foto']['name'])) {
     // Obter informações sobre o arquivo de foto
     $fotoNome = $_FILES['Foto']['name'];
@@ -66,61 +51,62 @@ if (isset($_POST['btnNovoPaciente'])) {
     $enderecoFoto = null;
   }
 
-  if (empty($nome) or empty($telefone) or empty($nascimento) or empty($convenio) or empty($CPF)) {
-    echo "<script language='javascript'> window.alert('Campo obrigatório em branco'); </script>";
-    echo "<script language='javascript'> window.location='index.php?acao=$item2'; </script>";
-  } else {
-    try {
-      $sql = $conexao->prepare("INSERT INTO paciente VALUES (null,?,?,?,?,?,?,?,?,?,?,?)");
-      $sql->execute(array(
-        $nome, $telefone, $email, $nascimento, $convenio, $enderecoFoto, $genero, $CPF, $_SESSION['id_psicologo'], $prontuario, $endereco
-      ));
-      if (!empty($_FILES['Anexos']['name'])) {
-        $anexos = $_FILES['Anexos'];
-        $pacienteId = $conexao->lastInsertId();
-        foreach ($anexos['tmp_name'] as $index => $tmp) {
-          $anexoNome = $anexos['name'][$index];
-          $anexoErro = $anexos['error'][$index];
+  try {
+    $valores = array(
+      'Nome' => $_POST['Nome'],
+      'Telefone' => $_POST['Telefone'],
+      'Email' => $_POST['Email'],
+      'Data_Nascimento' => $_POST['Nascimento'],
+      'Convenio' => $_POST['Convenio'],
+      'CPF' => $_POST['CPF'],
+      'Genero' => $_POST['Genero'],
+      'Prontuario' => $_POST['Prontuario'],
+      'Endereco' => $_POST['Endereco'],
+      'Psicologo' => $_SESSION['id_psicologo'],
+      'Foto' => $enderecoFoto
+    );
+    $pacienteId = insert('paciente', $valores);
 
-          // Verificar se não houve erros no upload do anexo
-          if ($anexoErro === UPLOAD_ERR_OK) {
-            // Definir o diretório de destino para salvar o anexo
-            $diretorioDestino = './anexosPacientes/';
+    if (!empty($_FILES['Anexos']['name'])) {
+      $anexos = $_FILES['Anexos'];
 
-            // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
-            $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+      foreach ($anexos['tmp_name'] as $index => $tmp) {
+        $anexoNome = $anexos['name'][$index];
+        $anexoErro = $anexos['error'][$index];
 
-            // Mover o arquivo temporário para o diretório de destino com o nome único
-            if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
-              // Endereço do anexo para armazenar no banco de dados
-              $enderecoAnexo = $diretorioDestino . $nomeAnexo;
+        // Verificar se não houve erros no upload do anexo
+        if ($anexoErro === UPLOAD_ERR_OK) {
+          // Definir o diretório de destino para salvar o anexo
+          $diretorioDestino = './anexosPacientes/';
 
-              // Inserir o anexo no banco de dados (dentro do loop)
-              $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
-              $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
-            }
+          // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
+          $nomeAnexo = $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+
+          // Mover o arquivo temporário para o diretório de destino com o nome único
+          if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
+            // Endereço do anexo para armazenar no banco de dados
+            $enderecoAnexo = $diretorioDestino . $nomeAnexo;
+
+            // Inserir o anexo no banco de dados (dentro do loop)
+            $dados = array(
+              'Nome' => $nomeAnexo,
+              'Anexo' => $enderecoAnexo,
+              'Paciente' => $pacienteId
+            );
+            insert('anexos', $dados);
           }
         }
       }
-      echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
-    } catch (Exception $e) {
-      echo $e;
     }
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
+  } catch (Exception $e) {
+    echo $e;
   }
 }
 
 // EDITAR PACIENTE
 if (isset($_POST['btnEditarPaciente'])) {
   $idEditarPaciente = $_GET['id'];
-  $nome = $_POST['Nome'];
-  $telefone = $_POST['Telefone'];
-  $email = $_POST['Email'];
-  $nascimento = $_POST['Nascimento'];
-  $genero = $_POST['Genero'];
-  $convenio = $_POST['Convenio'];
-  $CPF = $_POST['CPF'];
-  $prontuario = $_POST['Prontuario'];
-  $endereco = $_POST['Endereco'];
 
   if (isset($_POST['enderecoFoto'])) {
     $enderecoFoto = $_POST['enderecoFoto'];
@@ -135,13 +121,13 @@ if (isset($_POST['btnEditarPaciente'])) {
 
   // Verifica se foi anexado algum arquivo no campo foto
   if (!empty($_FILES['Foto']['name'])) {
-    $sqlFotoAntiga = $conexao->prepare("SELECT Foto FROM paciente WHERE ID = :idEditarPaciente");
-    $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
-    $sqlFotoAntiga->execute();
-    $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
-    if (($resultadoFotoAntiga["Foto"]) <> null) {
-      unlink($resultadoFotoAntiga["Foto"]);
-    };
+    $where = "ID = $idEditarPaciente";
+    $resultadoFotoAntiga = select('paciente', $where);
+
+    if (($resultadoFotoAntiga[0]["Foto"]) <> null) {
+      unlink($resultadoFotoAntiga[0]["Foto"]);
+    }
+    ;
 
     // Obter informações sobre o arquivo de foto
     $fotoNome = $_FILES['Foto']['name'];
@@ -164,13 +150,13 @@ if (isset($_POST['btnEditarPaciente'])) {
       }
     }
   } elseif ($apagarFoto == 1) {
-    $sqlFotoAntiga = $conexao->prepare("SELECT Foto FROM paciente WHERE ID = :idEditarPaciente");
-    $sqlFotoAntiga->bindParam(':idEditarPaciente', $idEditarPaciente);
-    $sqlFotoAntiga->execute();
-    $resultadoFotoAntiga = $sqlFotoAntiga->fetch(PDO::FETCH_ASSOC);
-    if (($resultadoFotoAntiga["Foto"]) <> null) {
-      unlink($resultadoFotoAntiga["Foto"]);
-    };
+    $where = "ID = $idEditarPaciente";
+    $resultadoFotoAntiga = select('paciente', $where);
+
+    if (($resultadoFotoAntiga[0]["Foto"]) <> null) {
+      unlink($resultadoFotoAntiga[0]["Foto"]);
+    }
+    ;
     $enderecoFoto = null;
   }
 
@@ -187,7 +173,7 @@ if (isset($_POST['btnEditarPaciente'])) {
         $diretorioDestino = './anexosPacientes/';
 
         // Gerar um nome único para o anexo (pode ser o ID do paciente, por exemplo)
-        $nomeAnexo =  $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
+        $nomeAnexo = $anexoNome . " - " . $pacienteId . '.' . pathinfo($anexoNome, PATHINFO_EXTENSION);
 
         // Mover o arquivo temporário para o diretório de destino com o nome único
         if (move_uploaded_file($tmp, $diretorioDestino . $nomeAnexo)) {
@@ -195,8 +181,12 @@ if (isset($_POST['btnEditarPaciente'])) {
           $enderecoAnexo = $diretorioDestino . $nomeAnexo;
 
           // Inserir o anexo no banco de dados (dentro do loop)
-          $sqlAnexo = $conexao->prepare("INSERT INTO anexos (Nome, Anexo, Paciente) VALUES (?, ?, ?)");
-          $sqlAnexo->execute(array($nomeAnexo, $enderecoAnexo, $pacienteId));
+          $valores = array(
+            'Nome' => $nomeAnexo,
+            'Anexo' => $enderecoAnexo,
+            'Paciente' => $pacienteId
+          );
+          insert('anexos', $valores);
         }
       }
     }
@@ -209,60 +199,80 @@ if (isset($_POST['btnEditarPaciente'])) {
     // Percorrer a lista de anexos marcados para exclusão
     foreach ($anexosExcluir as $anexoID) {
       // Consultar o banco de dados para obter o caminho do anexo
-      $sqlAnexo = $conexao->prepare("SELECT Anexo FROM anexos WHERE ID = :anexoID");
-      $sqlAnexo->bindParam(':anexoID', $anexoID);
-      $sqlAnexo->execute();
-      $resultadoAnexo = $sqlAnexo->fetch(PDO::FETCH_ASSOC);
+      $where = "ID = $anexoID";
+      $resultadoAnexo = select('anexos', $where);
 
       // Verificar se o anexo existe
       if ($resultadoAnexo) {
         // Excluir o anexo do banco de dados
-        $sqlExcluirAnexo = $conexao->prepare("DELETE FROM anexos WHERE ID = :anexoID");
-        $sqlExcluirAnexo->bindParam(':anexoID', $anexoID);
-        $sqlExcluirAnexo->execute();
+        delete('anexos', "ID = $anexoID");
 
         // Excluir o arquivo físico do anexo
-        unlink($resultadoAnexo['Anexo']);
+        unlink($resultadoAnexo[0]['Anexo']);
       }
     }
   }
 
 
   try {
-    $sqlEditarPaciente = $conexao->prepare("UPDATE paciente SET
-    Nome = :nome,
-    Telefone = :telefone,
-    Email = :email,
-    Data_Nascimento = :nascimento,
-    Genero = :genero,
-    Convenio = :convenio,
-    Foto = :foto,
-    CPF = :cpf,
-    Prontuario = :prontuario,
-    Endereco = :endereco
-    WHERE ID = :idEditarPaciente");
-
-    $sqlEditarPaciente->execute(
-      array(
-        ':nome' => $nome,
-        ':telefone' => $telefone,
-        ':email' => $email,
-        ':nascimento' => $nascimento,
-        ':genero' => $genero,
-        ':convenio' => $convenio,
-        ':foto' => $enderecoFoto,
-        ':cpf' => $CPF,
-        ':prontuario' => $prontuario,
-        ':endereco' => $endereco,
-        ':idEditarPaciente' => $idEditarPaciente
-      )
+    $dados = array(
+      'Nome' => $_POST['Nome'],
+      'Telefone' => $_POST['Telefone'],
+      'Email' => $_POST['Email'],
+      'Data_Nascimento' => $_POST['Nascimento'],
+      'Genero' => $_POST['Genero'],
+      'Convenio' => $_POST['Convenio'],
+      'Foto' => $enderecoFoto,
+      'CPF' => $_POST['CPF'],
+      'Prontuario' => $_POST['Prontuario'],
+      'Endereco' => $_POST['Endereco']
     );
+    update ('paciente', $dados, $idEditarPaciente);
+    
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   } catch (PDOException $e) {
     echo $e->getMessage();
   }
 }
 
+
+
+if (@($_GET['funcao']) == "exclusao") {
+  $idexclusao = $_GET['id'];
+  // Procura atendimentos futuros do paciente
+  $dataHoje = date_create()->format("Y-m-d H:i:s");
+  $where = "Paciente = $idexclusao AND Data_Fim > '$dataHoje'";
+  $BuscarAgendamentos = select('agendar', $where);
+
+  print_r($BuscarAgendamentos);
+  if (count($BuscarAgendamentos) >= 1) {
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
+  } elseif (count($BuscarAgendamentos) < 1) {
+    // Apaga atendimentos passados
+    delete('agendar', "Paciente = $idexclusao");
+    delete('atendimento', "Paciente = $idexclusao");
+
+    // Busca a foto do paciente para apagar
+    $fotoPaciente = select('paciente', "ID = $idexclusao");
+
+    if (isset($fotoPaciente[0]['Foto'])) {
+      unlink($fotoPaciente[0]['Foto']);
+    }
+
+    //Busca anexos do paciente para apagar
+    $anexosPaciente = select('anexos', "Paciente = $idexclusao");
+
+    if (!empty($anexosPaciente)) {
+      foreach ($anexosPaciente as $indice => $linha) {
+        unlink($linha['Anexo']);
+      }
+      delete('anexos', "Paciente = $idexclusao");
+    }
+    //Apaga Paciente
+    delete('paciente', "ID = $idexclusao");
+    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
+  }
+}
 ?>
 
 <?php
@@ -270,35 +280,37 @@ if (isset($_POST['btnEditarPaciente'])) {
 if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
   if (isset($_GET['id'])) {
     $idEditarPaciente = $_GET['id'];
-    $sqlEditarPaciente =  $conexao->prepare("SELECT * from paciente where(ID = $idEditarPaciente)");
-    $sqlEditarPaciente -> execute();
-    $dadosEditarPaciente = $sqlEditarPaciente->fetchAll(PDO::FETCH_ASSOC);
+    $where = "ID = $idEditarPaciente";
+    $dadosEditarPaciente = select('paciente', $where);
+
     //Busca anexos do paciente para listar
-    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM anexos where Paciente = :id");
-    $sqlBuscarAnexos->bindParam(":id", $idEditarPaciente);
-    $sqlBuscarAnexos->execute();
-    $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
-  };
-?>
+    $anexosPaciente = select('anexos', "Paciente = $idEditarPaciente");
+  }
+  ;
+  ?>
   <!-- MODAL DE PACIENTE -->
-  <div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalPaciente" tabindex="-1" role="dialog" aria-labelledby="#modalPaciente" aria-hidden="true">
+  <div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalPaciente" tabindex="-1" role="dialog"
+    aria-labelledby="#modalPaciente" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modalPaciente">CADASTRO DE PACIENTE</h5>
-          <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png"></div>
+          <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png">
+          </div>
           </button>
         </div>
         <div class="modal-body">
-          <form id="formModalPaciente" enctype="multipart/form-data" method="POST" action="index.php?acao=<?php echo $item2; ?><?php if (isset($idEditarPaciente)) {
-                                                                                                                                  echo "&id=$idEditarPaciente";
-                                                                                                                                } ?>">
+          <form id="formModalPaciente" enctype="multipart/form-data" method="POST"
+            action="index.php?acao=<?php echo $item2; ?><?php if (isset($idEditarPaciente)) {
+                 echo "&id=$idEditarPaciente";
+               } ?>">
             <div class="form-row">
               <div class="form-group col-md-10 col-sm-12">
                 <label for="Nome">Nome Completo</label>
-                <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Nome"])) {
-                                                                                                                      echo $dadosEditarPaciente[0]["Nome"];
-                                                                                                                    } ?>" required>
+                <input type="text" class="form-control" id="Nome" name="Nome" placeholder="Nome do Paciente"
+                  value="<?php if (isset($dadosEditarPaciente[0]["Nome"])) {
+                    echo $dadosEditarPaciente[0]["Nome"];
+                  } ?>" required>
               </div>
 
               <div class="form-group col-md-2 col-sm-12">
@@ -323,55 +335,60 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Nascimento">Data de Nascimento</label>
                 <input type="date" class="form-control" id="Nascimento" name="Nascimento" value="<?php if (isset($dadosEditarPaciente[0]["Data_Nascimento"])) {
-                                                                                                    echo $dadosEditarPaciente[0]["Data_Nascimento"];
-                                                                                                  } ?>" required>
+                  echo $dadosEditarPaciente[0]["Data_Nascimento"];
+                } ?>" required>
               </div>
 
               <div class="form-group col-md-4 col-sm-12">
                 <label for="Genero">Gênero</label>
                 <select id="Genero" name="Genero" class="form-control" required>
                   <option value="Masculino" <?php if (isset($dadosEditarPaciente[0]["Genero"]) && $dadosEditarPaciente[0]["Genero"] == "Masculino") {
-                                              echo 'selected';
-                                            } ?>>Masculino</option>
+                    echo 'selected';
+                  } ?>>Masculino</option>
                   <option value="Feminino" <?php if (isset($dadosEditarPaciente[0]["Genero"]) && $dadosEditarPaciente[0]["Genero"] == "Feminino") {
-                                              echo 'selected';
-                                            } ?>>Feminino</option>
+                    echo 'selected';
+                  } ?>>Feminino</option>
                   <option value="Outro" <?php if (isset($dadosEditarPaciente[0]["Genero"]) && $dadosEditarPaciente[0]["Genero"] == "Outro") {
-                                          echo 'selected';
-                                        } ?>>Outro</option>
+                    echo 'selected';
+                  } ?>>Outro</option>
                 </select>
               </div>
 
               <div class="form-group col-md-4 col-sm-12">
                 <label for="CPF">CPF</label>
                 <input type="text" class="form-control" id="CPF" name="CPF" placeholder="CPF do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["CPF"])) {
-                                                                                                                    echo $dadosEditarPaciente[0]["CPF"];
-                                                                                                                  } ?>" required>
+                  echo $dadosEditarPaciente[0]["CPF"];
+                } ?>"
+                  required>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Telefone">Telefone</label>
-                <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Telefone"])) {
-                                                                                                                                  echo $dadosEditarPaciente[0]["Telefone"];
-                                                                                                                                } ?>" required>
+                <input type="text" class="form-control" id="Telefone" name="Telefone" placeholder="Telefone do Paciente"
+                  value="<?php if (isset($dadosEditarPaciente[0]["Telefone"])) {
+                    echo $dadosEditarPaciente[0]["Telefone"];
+                  } ?>"
+                  required>
               </div>
 
               <div class="form-group col-md-6 col-sm-12">
                 <label for="Email">E-mail</label>
-                <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do Paciente" value="<?php if (isset($dadosEditarPaciente[0]["Email"])) {
-                                                                                                                            echo $dadosEditarPaciente[0]["Email"];
-                                                                                                                          } ?>">
+                <input type="email" class="form-control" id="Email" name="Email" placeholder="E-mail do Paciente"
+                  value="<?php if (isset($dadosEditarPaciente[0]["Email"])) {
+                    echo $dadosEditarPaciente[0]["Email"];
+                  } ?>">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-md-12 col-sm-12">
                 <label for="Endereco">Endereço</label>
-                <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do Paciente" class="form-control" value="<?php if (isset($dadosEditarPaciente[0]["Endereco"])) {
-                                                                                                                                  echo $dadosEditarPaciente[0]["Endereco"];
-                                                                                                                                } ?>">
+                <input id="Endereco" name="Endereco" type="text" placeholder="Endereço do Paciente" class="form-control"
+                  value="<?php if (isset($dadosEditarPaciente[0]["Endereco"])) {
+                    echo $dadosEditarPaciente[0]["Endereco"];
+                  } ?>">
               </div>
 
             </div>
@@ -383,16 +400,20 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                 if (isset($dadosEditarPaciente[0]["Foto"])) { ?>
                   <input type="hidden" value="<?php echo $dadosEditarPaciente[0]["Foto"]; ?>" name="enderecoFoto">
                   <label>Foto Atual:</label>
-                  <img src="<?php echo $dadosEditarPaciente[0]["Foto"] ?>" alt="Foto Atual" width="200em" class="foto-paciente mt-2 ml-2 img-thumbnail">
-                  <br> <input class="" type="checkbox" id="apagarFoto" name="apagarFoto"> <label for="apagarFoto">Deletar foto</label> <?php
-                                                                                                                                      }
-                                                                                                                                        ?>
+                  <img src="<?php echo $dadosEditarPaciente[0]["Foto"] ?>" alt="Foto Atual" width="200em"
+                    class="foto-paciente mt-2 ml-2 img-thumbnail">
+                  <br> <input class="" type="checkbox" id="apagarFoto" name="apagarFoto"> <label for="apagarFoto">Deletar
+                    foto</label>
+                  <?php
+                }
+                ?>
               </div>
               <div class="form-group col-md-8 col-sm-12">
                 <label for="Prontuario">Prontuário</label>
-                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario" placeholder="Prontuário do Paciente"><?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
-                                                                                                                                  echo $dadosEditarPaciente[0]["Prontuario"];
-                                                                                                                                } ?></textarea>
+                <textarea id="Prontuario" class="form-control" rows="7" name="Prontuario"
+                  placeholder="Prontuário do Paciente"><?php if (isset($dadosEditarPaciente[0]["Prontuario"])) {
+                    echo $dadosEditarPaciente[0]["Prontuario"];
+                  } ?></textarea>
               </div>
             </div>
 
@@ -410,10 +431,17 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
                     <?php foreach ($anexosPaciente as $indice => $linha) { ?>
                       <tr>
                         <input type="hidden" name="anexosExistentes[]" value="<?php echo $linha['Anexo']; ?>">
-                        <td scope="row"><?php echo ($linha['Nome']); ?> </td>
-                        <td scope="row"> <?php $caminhoArquivo = $linha['Anexo']; ?> <a href="<?php echo $caminhoArquivo; ?>" target="_blank">Abrir</a> </td>
+                        <td scope="row">
+                          <?php echo ($linha['Nome']); ?>
+                        </td>
+                        <td scope="row">
+                          <?php $caminhoArquivo = $linha['Anexo']; ?> <a href="<?php echo $caminhoArquivo; ?>"
+                            target="_blank">Abrir</a>
+                        </td>
                         <td scope="row"> <a href="<?php echo $caminhoArquivo; ?>" download>Download</a> </td>
-                        <td scope="row"> <input class="" type="checkbox" id="apagarAnexo<?php echo $linha['ID']; ?>" name="apagarAnexo[]" value="<?php echo $linha['ID']; ?>"> <label for="apagarAnexo<?php echo $linha['ID']; ?>">Deletar arquivo</label> </td>
+                        <td scope="row"> <input class="" type="checkbox" id="apagarAnexo<?php echo $linha['ID']; ?>"
+                            name="apagarAnexo[]" value="<?php echo $linha['ID']; ?>"> <label
+                            for="apagarAnexo<?php echo $linha['ID']; ?>">Deletar arquivo</label> </td>
                       </tr>
                     <?php }
                     ?>
@@ -426,12 +454,17 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
         <div class="modal-footer">
           <?php if (isset($idEditarPaciente)) { ?>
             <div class="text-left mr-auto">
-              <a form="formModalPaciente" class="btn btn-warning text-white" href="export/paciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Imprimir Ficha do Paciente</a>
-              <a class="btn btn-warning text-white" href="export/relatPaciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Imprimir Todos os Relatórios de Atendimento</a>
+              <a form="formModalPaciente" class="btn btn-warning text-white"
+                href="export/paciente.php?id=<?php echo $idEditarPaciente; ?>" target="_blank">Imprimir Ficha do
+                Paciente</a>
+              <a class="btn btn-warning text-white" href="export/relatPaciente.php?id=<?php echo $idEditarPaciente; ?>"
+                target="_blank">Imprimir Todos os Relatórios de Atendimento</a>
             </div>
           <?php } ?>
-          <button form="formModalPaciente" type="submit" class="btn btn-success" name="<?php echo ($_GET['funcao'] == 'editar') ? 'btnEditarPaciente' : 'btnNovoPaciente'; ?>"><?php echo ($_GET['funcao'] == 'editar') ? 'Editar' : 'Cadastrar'; ?></button>
-          <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item2 ?>">Cancelar</button>
+          <button form="formModalPaciente" type="submit" class="btn btn-success"
+            name="<?php echo ($_GET['funcao'] == 'editar') ? 'btnEditarPaciente' : 'btnNovoPaciente'; ?>"><?php echo ($_GET['funcao'] == 'editar') ? 'Editar' : 'Cadastrar'; ?></button>
+          <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger"
+            name="<?php echo $item2 ?>">Cancelar</button>
         </div>
 
       </div>
@@ -443,8 +476,9 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
     echo '<script> $("#modalPaciente").modal("show"); </script>';
   } elseif (@($_GET['funcao']) == "novo") {
     echo '<script> $("#modalPaciente").modal("show"); </script>';
-  };
-  ?>
+  }
+  ;
+?>
 <?php } ?>
 
 <?php
@@ -452,7 +486,8 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
 // MODAL EXCLUIR PACIENTE
 if (@($_GET['funcao']) == "excluir") {
   $idexclusao = $_GET['id']; ?>
-  <div class="modal fade" id="ConfirmExclusaoPaciente" tabindex="-1" role="dialog" aria-labelledby="#ConfirmExclusaoPaciente" aria-hidden="true">
+  <div class="modal fade" id="ConfirmExclusaoPaciente" tabindex="-1" role="dialog"
+    aria-labelledby="#ConfirmExclusaoPaciente" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -463,11 +498,13 @@ if (@($_GET['funcao']) == "excluir") {
         </div>
         <div class="modal-body">
           Você deseja realmente excluir este paciente? <br>
-          Você irá excluir todos os agendamentos passados deste paciente e todos os registros de atendimento deste paciente.
+          Você irá excluir todos os agendamentos passados deste paciente e todos os registros de atendimento deste
+          paciente.
         </div>
         <div class="modal-footer">
           <a href="index.php?acao=<?php echo $item2; ?>" type="button" class="btn btn-dark">Cancelar</a>
-          <a class="btn btn-danger" href="index.php?acao=<?php echo $item2; ?>&funcao=exclusao&id=<?php echo $idexclusao; ?>">Excluir</a>
+          <a class="btn btn-danger"
+            href="index.php?acao=<?php echo $item2; ?>&funcao=exclusao&id=<?php echo $idexclusao; ?>">Excluir</a>
         </div>
       </div>
     </div>
@@ -475,59 +512,7 @@ if (@($_GET['funcao']) == "excluir") {
   <script>
     $("#ConfirmExclusaoPaciente").modal("show")
   </script>
-<?php
-}
-
-// EXCLUSAO PACIENTE
-if (@($_GET['funcao']) == "exclusao") {
-  $idexclusao = $_GET['id'];
-  // Procura atendimentos futuros do paciente
-  $dataHoje = date_create()->format("Y-m-d H:i:s");
-  $sqlBuscarAgendamentos = $conexao->prepare("SELECT * FROM agendar WHERE paciente = :id AND Data_Fim > :dataHoje");
-  $sqlBuscarAgendamentos->bindParam(":id", $idexclusao);
-  $sqlBuscarAgendamentos->bindParam(":dataHoje", $dataHoje);
-  $sqlBuscarAgendamentos->execute();
-  $BuscarAgendamentos = $sqlBuscarAgendamentos->fetchAll(PDO::FETCH_ASSOC);
-  if (count($BuscarAgendamentos) >= 1) {
-    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=danger'; </script>";
-  } elseif (count($BuscarAgendamentos) < 1) {
-    // Apaga atendimentos passados
-    $sqlApagarAgendamentos = $conexao->prepare("DELETE FROM agendar WHERE paciente = :id");
-    $sqlApagarAgendamentos->bindParam(":id", $idexclusao);
-    $sqlApagarAgendamentos->execute();
-
-    $sqlApagarAtendimentos = $conexao->prepare("DELETE FROM atendimento WHERE paciente = :id");
-    $sqlApagarAtendimentos->bindParam(":id", $idexclusao);
-    $sqlApagarAtendimentos->execute();
-
-    // Busca a foto do paciente para apagar
-    $sqlBuscarFoto = $conexao->prepare("SELECT Foto FROM paciente where ID = :id");
-    $sqlBuscarFoto->bindParam(":id", $idexclusao);
-    $sqlBuscarFoto->execute();
-    $fotoPaciente = $sqlBuscarFoto->fetchAll(PDO::FETCH_ASSOC);
-    if (isset($fotoPaciente[0]['Foto'])) {
-      unlink($fotoPaciente[0]['Foto']);
-    }
-
-    //Busca anexos do paciente para apagar
-    $sqlBuscarAnexos = $conexao->prepare("SELECT * FROM anexos where Paciente = :id");
-    $sqlBuscarAnexos->bindParam(":id", $idexclusao);
-    $sqlBuscarAnexos->execute();
-    $anexosPaciente = $sqlBuscarAnexos->fetchAll(PDO::FETCH_ASSOC);
-    if (!empty($anexosPaciente)) {
-      foreach ($anexosPaciente as $indice => $linha) {
-        unlink($linha['Anexo']);
-      }
-      $sqlApagarAnexo = $conexao->prepare("DELETE FROM anexos where Paciente = :id");
-      $sqlApagarAnexo->bindParam(":id", $idexclusao);
-      $sqlApagarAnexo->execute();
-    }
-    //Apaga Paciente
-    $sql = $conexao->prepare("DELETE FROM paciente WHERE id = :id");
-    $sql->bindParam(":id", $idexclusao);
-    $sql->execute();
-    echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
-  }
+  <?php
 }
 ?>
 
@@ -545,8 +530,11 @@ if (@($_GET['funcao']) == "exclusao") {
   <div class="col-md-6 col-sm-12">
     <div class="float-right">
       <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="Buscar paciente" aria-label="Search" name="txtBuscarPacientes" value="<?php if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") echo  $_GET['txtBuscarPacientes'];   //manter o nome pesquisado no input   
-                                                                                                                                              ?>">
+        <input class="form-control mr-sm-2" type="search" placeholder="Buscar paciente" aria-label="Search"
+          name="txtBuscarPacientes"
+          value="<?php if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "")
+            echo $_GET['txtBuscarPacientes']; //manter o nome pesquisado no input   
+          ?>">
         <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" name="btnBuscarPacientes">Buscar</button>
       </form>
     </div>
@@ -570,33 +558,45 @@ if (@($_GET['funcao']) == "exclusao") {
     if (($listapacientes == null)) {
       $nenhumPaciente = "Nenhum paciente encontrado.";
     } else {
-    foreach ($listapacientes as $indice => $linha) {
-      $nenhumPaciente = null;
-      if ($linha['Psicologo'] == $_SESSION['id_psicologo']) {
-    ?>
-        <tr>
-          <th scope="row"><?php echo $linha['ID'] ?></th>
-          <td><?php echo $linha['Nome'] ?></td>
-          <td>
-            <?php
-            // Converter o ID convenio para Nome Convenio
-            $sqlNomeConvenio = $conexao->prepare("SELECT Nome FROM convenios where (ID = '$linha[Convenio]')");
-            $sqlNomeConvenio->execute();
-            $nomeConvenio = $sqlNomeConvenio->fetchAll(PDO::FETCH_ASSOC);
-            if (count($nomeConvenio) == 1) {
-              echo $nomeConvenio[0]['Nome'];
-            }
-            ?>
-          </td>
-          <td class="d-none d-sm-block"><?php echo $linha['Telefone'] ?></td>
-          <td>
-            <a href="index.php?acao=<?php echo $item2; ?>&funcao=excluir&id=<?php echo $linha['ID']; ?>" class="btn btn-danger mt-1" id="btnExcluir"> Excluir </a>
-            <a href="index.php?acao=<?php echo $item2; ?>&funcao=editar&id=<?php echo $linha['ID']; ?>" class="btn btn-warning mt-1">Editar</a>
-          </td>
-        </tr>
+      foreach ($listapacientes as $indice => $linha) {
+        $nenhumPaciente = null;
+        if ($linha['Psicologo'] == $_SESSION['id_psicologo']) {
+          ?>
+          <tr>
+            <th scope="row">
+              <?php echo $linha['ID'] ?>
+            </th>
+            <td>
+              <?php echo $linha['Nome'] ?>
+            </td>
+            <td>
+              <?php
+              // Converter o ID convenio para Nome Convenio
+              $nomeConvenio = select('convenios', "ID = $linha[Convenio]");
+              /*
+              $sqlNomeConvenio = $conexao->prepare("SELECT Nome FROM convenios where (ID = '$linha[Convenio]')");
+              $sqlNomeConvenio->execute();
+              $nomeConvenio = $sqlNomeConvenio->fetchAll(PDO::FETCH_ASSOC);
+              */
+              if (count($nomeConvenio) == 1) {
+                echo $nomeConvenio[0]['Nome'];
+              }
+              ?>
+            </td>
+            <td class="d-none d-sm-block">
+              <?php echo $linha['Telefone'] ?>
+            </td>
+            <td>
+              <a href="index.php?acao=<?php echo $item2; ?>&funcao=excluir&id=<?php echo $linha['ID']; ?>"
+                class="btn btn-danger mt-1" id="btnExcluir"> Excluir </a>
+              <a href="index.php?acao=<?php echo $item2; ?>&funcao=editar&id=<?php echo $linha['ID']; ?>"
+                class="btn btn-warning mt-1">Editar</a>
+            </td>
+          </tr>
 
-    <?php }
-    } } ?>
+        <?php }
+      }
+    } ?>
   </tbody>
 </table>
 

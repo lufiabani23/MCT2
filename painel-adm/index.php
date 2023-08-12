@@ -1,17 +1,8 @@
 <?php
-$Nnotificacoes = 3;
-require_once('../conexao.php');
+$Nnotificacoes = 0;
+require_once("../config.php");
+$conexao = conectar();
 @session_start();
-
-$result = $conexao->prepare("SELECT * from psicologo where ID = $_SESSION[id_psicologo] ");
-$result->execute();
-$dados = $result->fetchAll(PDO::FETCH_ASSOC);
-
-$_SESSION['id_psicologo'] = $dados[0]['ID'];
-$_SESSION['CRP_psicologo'] = $dados[0]['CRP'];
-$_SESSION['nome_psicologo'] = $dados[0]['Nome'];
-$_SESSION['email_psicologo'] = $dados[0]['Email'];
-$_SESSION['senha_psicologo'] = $dados[0]['Senha'];
 
 //Se não estiver setado o nome do psicologo ele vai retornar a tela inicial - segurança
 if (!isset($_SESSION['nome_psicologo'])) {
@@ -19,36 +10,26 @@ if (!isset($_SESSION['nome_psicologo'])) {
 };
 
 // Busca dos pacientes - array com todos os pacientes
-$pacientes = $conexao->prepare("SELECT * FROM paciente WHERE (Psicologo = $_SESSION[id_psicologo]) order by Nome asc");
-$pacientes->execute();
-$listapacientes = $pacientes->fetchALL();
+$where = "Psicologo = $_SESSION[id_psicologo] order by Nome asc";
+$listapacientes = select('paciente', $where);
 $_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
+
+
 
 // Data de hoje
 $datetimeToday = date('Y-m-d');
-
 // Data daqui a 7 dias
 $datetimeNextWeek = date('Y-m-d', strtotime('+7 days'));
 
 // Busca de todos os agendamentos nos próximos 7 dias
-$sqlBuscarAgendamentos7 = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio >= :today AND Data_Fim <= :next_week AND Realizado = 0");
-$sqlBuscarAgendamentos7->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
-$sqlBuscarAgendamentos7->bindValue(':today', $datetimeToday);
-$sqlBuscarAgendamentos7->bindValue(':next_week', $datetimeNextWeek);
-$sqlBuscarAgendamentos7->execute();
-
-$listaAgendamentos7 = $sqlBuscarAgendamentos7->fetchAll();
+$where = "Psicologo = $_SESSION[id_psicologo] AND Data_Inicio >= $datetimeToday AND Data_Fim <= $datetimeNextWeek AND Realizado = 0";
+$listaAgendamentos7 = select('agendar', $where);
 $_SESSION['totalAgendamentos7'] = count($listaAgendamentos7);
 
-
+// Busca de todos os agendamentos do dia de hoje/amanhã
 $datetimeAmanha = date('Y-m-d', strtotime('+1 day'));
-
-$sqlBuscarAgendamentosHoje = $conexao->prepare("SELECT * FROM agendar WHERE Psicologo = :psicologo_id AND Data_Inicio >= :dataInicio AND Data_Inicio < :dataFim AND Realizado = 0");
-$sqlBuscarAgendamentosHoje->bindValue(':psicologo_id', $_SESSION['id_psicologo']);
-$sqlBuscarAgendamentosHoje->bindValue(':dataInicio', $datetimeToday);
-$sqlBuscarAgendamentosHoje->bindValue(':dataFim', $datetimeAmanha);
-$sqlBuscarAgendamentosHoje->execute();
-$listaAgendamentosHoje = $sqlBuscarAgendamentosHoje->fetchAll();
+$where = "Psicologo = $_SESSION[id_psicologo] AND Data_Inicio >= $datetimeToday AND Data_Inicio < $datetimeAmanha AND Realizado = 0";
+$listaAgendamentosHoje = select('agendar', $where);
 $_SESSION['totalAgendamentosHoje'] = count($listaAgendamentosHoje);
 
 //ITENS DO MENU E DAS PAGINAS

@@ -1,7 +1,7 @@
 <?php
 
-require_once("conexao.php");
-
+require_once("config.php");
+$conexao = conectar();
 @session_start();
 
 if (empty($_POST['usuario']) or empty($_POST['senha'])) {
@@ -24,8 +24,10 @@ $linhas = count($dados);
 
 if ($linhas > 0 and $linhas < 2) {
     $_SESSION['id_psicologo'] = $dados[0]['ID'];
-    $_SESSION['nome_psicologo'] = $dados[0]['Nome'];
     $_SESSION['CRP_psicologo'] = $dados[0]['CRP'];
+    $_SESSION['nome_psicologo'] = $dados[0]['Nome'];
+    $_SESSION['email_psicologo'] = $dados[0]['Email'];
+    $_SESSION['senha_psicologo'] = $dados[0]['Senha'];
     
     //Verificação do convenio "Particular"
     $sqlConvenioParticular = $conexao->prepare("SELECT * FROM convenios WHERE (Psicologo = $_SESSION[id_psicologo] and Nome = 'Particular')");
