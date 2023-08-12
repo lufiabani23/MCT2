@@ -144,7 +144,7 @@ if (isset($_POST['btnRecuperarSenha'])) {
         <h5>SystemPsi</h5>
         ";
 
-        $remetente = "contato@systempsi.xyz";
+        $remetente = "contato@systempsi.com.br";
         $headers = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= "From: " . $remetente;

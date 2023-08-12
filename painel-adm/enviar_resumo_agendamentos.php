@@ -61,7 +61,7 @@ try {
             $subject = "Resumo dos Agendamentos - " . date('d/m/Y');
             $headers = "MIME-Version: 1.0" . "\r\n";
             $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-            $headers .= "From: contato@systempsi.xyz" . "\r\n";
+            $headers .= "From: contato@systempsi.com.br" . "\r\n";
 
             mail($to, $subject, $mensagem, $headers);
         }

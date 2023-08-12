@@ -76,7 +76,7 @@ if (isset($_POST['btnNovoParticular'])) {
         <a class="nav-link active" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="true">Perfil</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="pills-convenios-tab" data-toggle="pill" href="#pills-convenios" role="tab" aria-controls="pills-convenios" aria-selected="false">Convenios</a>
+        <a class="nav-link" id="pills-convenios-tab" data-toggle="pill" href="#pills-convenios" role="tab" aria-controls="pills-convenios" aria-selected="false">Convênios</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" id="pills-particular-tab" data-toggle="pill" href="#pills-particular" role="tab" aria-controls="pills-particular" aria-selected="false">Particular</a>
