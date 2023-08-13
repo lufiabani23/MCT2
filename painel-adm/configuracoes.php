@@ -2,16 +2,11 @@
 //ADICIONAR e ALTERAR CONVENIO
 if (isset($_POST['btnNovoConvenio'])) {
     if (!empty($_POST['idConvenio'])) {
-        $idconvenio = $_POST['idConvenio'];
-        $nomeconvenio = $_POST['nomeconvenio'];
-        $valorconsulta = $_POST['valorconsulta'];
-        $sqlAtualizarConvenio = $conexao->prepare("UPDATE convenios SET Nome = ?, Valor_Consulta = ? WHERE ID = ?");
-        $sqlAtualizarConvenio->execute(array($nomeconvenio, $valorconsulta, $idconvenio));
+        $dados = array('Nome' => $_POST['nomeconvenio'], 'Valor_Consulta' => $_POST['valorconsulta']);
+        update('convenios', $dados, "ID = $_POST[idConvenio]");
     } else {
-        $nomeconvenio = $_POST['nomeconvenio'];
-        $valorconsulta = $_POST['valorconsulta'];
-        $sqlConvenio = $conexao->prepare("INSERT INTO convenios VALUES (null,?,?,?)");
-        $sqlConvenio->execute(array($nomeconvenio, $valorconsulta, $_SESSION['id_psicologo']));
+        $dados = array('Nome' => $_POST['nomeconvenio'], 'Valor_Consulta' => $_POST['valorconsulta'], 'Psicologo' => $_SESSION['id_psicologo']);
+        insert ('convenios', $dados);
         echo "<script language='javascript'> window.alert('Convênio inserido com sucesso!'); </script>";
         echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
     }
@@ -20,20 +15,21 @@ if (isset($_POST['btnNovoConvenio'])) {
 // EDITAR PSICOLOGO
 
 if (isset($_POST['btnEditarPsicologo'])) {
-    $nomePsicologo = $_POST['nomePsicologo'];
-    $emailPsicologo = $_POST['emailPsicologo'];
-    $CRPPsicologo = $_POST['CRPPsicologo'];
-    $senhaPsicologo = $_POST['senhaPsicologo'];
-    $senhaAtual = $_POST['senhaAtual'];
-
-    if ($senhaPsicologo == "") {
-        $senhaSQL = $senhaAtual;
+    if ($_POST['senhaPsicologo'] == "") {
+        $senhaSQL = $_POST['senhaPsicologo'];
     } else {
-        $senhaSQL = md5($senhaPsicologo);
+        $senhaSQL = md5($_POST['senhaPsicologo']);
     }
 
-    $sqlEditarPsicologo = $conexao -> prepare ("UPDATE psicologo set Nome = ?, Email = ?, CRP = ?, Senha = ? WHERE ID = ?");
-    $sqlEditarPsicologo -> execute(array($nomePsicologo, $emailPsicologo, $CRPPsicologo, $senhaSQL, $_SESSION['id_psicologo']));
+    $dados = array(
+        'Nome' => $_POST['nomePsicologo'],
+        'Email' => $_POST['emailPsicologo'],
+        'CRP' => $_POST['CRPPsicologo'],
+        'Senha' => $senhaSQL
+    );
+
+    update('psicologo', $dados, "ID = $_SESSION[id_psicologo]");
+
     echo "<script language='javascript'> window.alert('Dados alterados com sucesso!'); </script>";
     echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
 
@@ -41,22 +37,21 @@ if (isset($_POST['btnEditarPsicologo'])) {
 
 
 //BUCAR CONVENIOS
-$sql = $conexao->prepare("SELECT * FROM convenios where (Nome != 'Particular') and Psicologo = $_SESSION[id_psicologo]");
-$sql->execute();
-$listaconvenios = $sql->fetchALL();
+$where = "(Nome != 'Particular') and Psicologo = $_SESSION[id_psicologo]";
+$listaconvenios = select('convenios', $where);
 
 // APAGAR CONVENIO
 if (isset($_GET['btnApagarConvenio'])) {
     $idApagarConvenio = $_GET['ID'];
-    try {
-        $sqlApagarConvenio = $conexao->prepare("DELETE FROM convenios where (ID = '$idApagarConvenio')");
-        $ApagarConvenio = $sqlApagarConvenio->execute();
-        echo "<script language='javascript'> window.alert('Convênio apagado com sucesso!'); </script>";
-        echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
-    } catch (Exception $e) {
-        echo "<script language='javascript'> window.alert('Você ainda tem pacientes vinculados a este convênio.'); </script>";
-        echo "<script language='javascript'> window.location='index.php?acao=pacientes&idc=$idApagarConvenio'; </script>";
-    }
+    //dentro do try somente para verificação de pacientes vinculados
+
+        if (delete('convenios', "ID = $idApagarConvenio") == false) {
+            echo "<script language='javascript'> window.alert('Você ainda tem pacientes vinculados a este convênio.'); </script>";
+            echo "<script language='javascript'> window.location='index.php?acao=pacientes&idc=$idApagarConvenio'; </script>";
+        } else {
+            echo "<script language='javascript'> window.alert('Convênio apagado com sucesso!'); </script>";
+            echo "<script language='javascript'> window.location='index.php?acao=configuracoes'; </script>";
+        }
 }
 
 // ALTERAR VALOR PARTICULAR
@@ -184,9 +179,8 @@ if (isset($_POST['btnNovoParticular'])) {
     <div class="tab-pane fade" id="pills-particular" role="tabpanel" aria-labelledby="pills-particular-tab">
         <?php
         //BUSCA O VALOR DA CONSULTA PARTICULAR 
-        $sqlParticular = $conexao->prepare("SELECT * FROM convenios where (Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])");
-        $sqlParticular->execute();
-        $convenioParticular = $sqlParticular->fetchALL(PDO::FETCH_ASSOC);
+        $where = "(Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])";
+        $convenioParticular = select('convenios', $where);
         ?>
 
         <p style="font-size: 1.5em; text-align: center">Valor atual da consulta particular: <b><?php echo $convenioParticular[0]['Valor_Consulta']; ?></b></p>

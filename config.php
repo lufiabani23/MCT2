@@ -82,9 +82,10 @@ function delete($tabela, $where) {
         $sql = "DELETE FROM $tabela WHERE $where";
         $stmt = $conexao -> prepare ($sql);
         $stmt -> execute();
+        return true;
         $conexao = null;
     } catch (PDOException $e) {
-        echo $e;
+        return false;
     }
 }
 

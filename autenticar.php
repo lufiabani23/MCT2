@@ -11,16 +11,9 @@ if (empty($_POST['usuario']) or empty($_POST['senha'])) {
 $usuario = $_POST['usuario'];
 $senha = md5($_POST['senha']);
 
-$result = $conexao->prepare("SELECT * from psicologo where Email = :usuario and Senha = :senha ");
-
-$result->bindValue(":usuario", $usuario);
-$result->bindValue(":senha", $senha);
-
-$result->execute();
-
-$dados = $result->fetchAll(PDO::FETCH_ASSOC);
+$where = "Email = '$usuario' and Senha = '$senha'";
+$dados = select('psicologo', $where);
 $linhas = count($dados);
-
 
 if ($linhas > 0 and $linhas < 2) {
     $_SESSION['id_psicologo'] = $dados[0]['ID'];
@@ -30,12 +23,12 @@ if ($linhas > 0 and $linhas < 2) {
     $_SESSION['senha_psicologo'] = $dados[0]['Senha'];
     
     //Verificação do convenio "Particular"
-    $sqlConvenioParticular = $conexao->prepare("SELECT * FROM convenios WHERE (Psicologo = $_SESSION[id_psicologo] and Nome = 'Particular')");
-    $sqlConvenioParticular->execute();
-    $listaConvenio = $sqlConvenioParticular->fetchAll(PDO::FETCH_ASSOC);
+    $where = "Psicologo = $_SESSION[id_psicologo] and Nome = 'Particular'";
+    $listaConvenio = select('convenios', $where);
+
     if (count($listaConvenio) < 1) {
-        $sqlInserirParticular = $conexao->prepare("INSERT INTO convenios (Nome,Psicologo) VALUE ('Particular','$_SESSION[id_psicologo]')");
-        $sqlInserirParticular->execute();
+        $dados = array('Nome' => 'Particular', 'Psicologo' => $_SESSION['id_psicologo']);
+        insert ('convenios', $dados);
     }
 
     header("location:painel-adm/index.php");

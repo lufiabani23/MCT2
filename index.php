@@ -119,14 +119,16 @@ $conexao = conectar();
 if (isset($_POST['btnRecuperarSenha'])) {
     $emailRecuperar = $_POST['emailRecuperar'];
 
+    $resultadoEmail = select('psicologo', "Email = $emailRecuperar");
+
+    /*
     $sqlVerificaEmail = $conexao->prepare("SELECT * FROM psicologo WHERE Email = :email");
     $sqlVerificaEmail->bindParam(':email', $emailRecuperar);
     $sqlVerificaEmail->execute();
     $resultadoEmail = $sqlVerificaEmail->fetchAll();
+    */
     $nomeRecuperar = $resultadoEmail[0]['Nome'];
     $idRecuperar = $resultadoEmail[0]['ID'];
-
-    echo $resultadoEmail[0]['Nome'];
 
     if (count($resultadoEmail) > 0) {
         $to = $emailRecuperar;
@@ -160,11 +162,6 @@ if (isset($_POST['btnRecuperarSenha'])) {
         echo "<script language='javascript'>window.location='index.php';</script>";
     }
 }
-
-
-
-// CÓDIGO DO EMAIL
-
 
 
 ?>

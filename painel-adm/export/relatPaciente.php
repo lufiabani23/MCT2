@@ -1,26 +1,27 @@
 <?php
 @session_start();
-include_once("../../conexao.php");
+include_once("../../config.php");
 
 // Verifica se a variável "id" foi passada como parâmetro
 if (isset($_GET['id'])) {
     $idPaciente = $_GET['id'];
 
-    // Busca os relatórios de atendimento do paciente com base no ID do paciente
-    $sqlBuscarAtendimentos = $conexao->prepare("SELECT * FROM atendimento WHERE Paciente = :idPaciente");
-    $sqlBuscarAtendimentos->bindValue(':idPaciente', $idPaciente);
-    $sqlBuscarAtendimentos->execute();
-    $dadosAtendimentos = $sqlBuscarAtendimentos->fetchAll();
+    $dadosAtendimentos = select('atendimento', "Paciente = $idPaciente");
 
+    $dadosPaciente = select('paciente', "ID = $idPaciente");
+    /*
     $sqlBuscarPaciente = $conexao->prepare("SELECT * from paciente where id = $idPaciente");
     $sqlBuscarPaciente->execute();
     $dadosPaciente = $sqlBuscarPaciente->fetch();
-
+*/
+    $dadosConvenio = select('convenios', "ID = {$dadosPaciente[0]['Convenio']}");
+    /*
     $convenioPaciente = $dadosPaciente["Convenio"];
     $sqlBuscarConvenio = $conexao->prepare("SELECT * FROM convenios WHERE (ID = :convenio_id)");
     $sqlBuscarConvenio->bindValue(':convenio_id', $convenioPaciente);
     $sqlBuscarConvenio->execute();
     $dadosConvenio = $sqlBuscarConvenio->fetch();
+    */
 
     $visualizar = true;
     ?>
@@ -49,7 +50,7 @@ if (isset($_GET['id'])) {
     <link rel="shortcut icon" href="../img/favicon/favicon.ico" type="image/x-icon">
     <link rel="icon" href="../img/favicon/favicon.ico" type="image/x-icon">
     <title>Relatório de todos os Atendimento - 
-        <?php echo $dadosPaciente["Nome"]; ?>
+        <?php echo $dadosPaciente[0]["Nome"]; ?>
     </title>
 </head>
     <body>
@@ -68,21 +69,21 @@ if (isset($_GET['id'])) {
             <div class="row">
                 <div class="col-md-2 col-sm-12">
                     <div class="text-center ">
-                        <?php if (isset($dadosPaciente["Foto"])) { ?>
+                        <?php if (isset($dadosPaciente[0]["Foto"])) { ?>
                             <img class="card-img-top foto-paciente" width="200em"
-                                src="../<?php echo $dadosPaciente["Foto"]; ?>"><br><br>
+                                src="../<?php echo $dadosPaciente[0]["Foto"]; ?>"><br><br>
                         <?php } ?>
                     </div>
                 </div>
                 <div class="col-md-7">
                     <h2>Paciente:
-                        <?php echo $dadosPaciente["Nome"]; ?>
+                        <?php echo $dadosPaciente[0]["Nome"]; ?>
                     </h2>
                     <h3>Gênero:
-                        <?php echo $dadosPaciente["Genero"]; ?>
+                        <?php echo $dadosPaciente[0]["Genero"]; ?>
                     </h3>
                     <h3>Convênio:
-                        <?php echo $dadosConvenio["Nome"]; ?>
+                        <?php echo $dadosConvenio[0]["Nome"]; ?>
                     </h3>
                 </div>
                 <div class="col-md-3">
@@ -102,7 +103,7 @@ if (isset($_GET['id'])) {
                 <div class="col-12">
                     <label for="Prontuario">Prontuário:</label>
                     <textarea readonly rows="4" id="Prontuario"
-                        class="form-control auto-resize"><?php echo $dadosPaciente["Prontuario"]; ?></textarea>
+                        class="form-control auto-resize"><?php echo $dadosPaciente[0]["Prontuario"]; ?></textarea>
                 </div>
             </div>
 

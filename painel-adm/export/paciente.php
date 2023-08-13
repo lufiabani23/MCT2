@@ -1,16 +1,12 @@
 <?php
 @session_start();
 $idPaciente = $_GET['id'];
-include_once("../../conexao.php");
+include_once("../../config.php");
 
-$sqlBuscarPaciente = $conexao->prepare("SELECT * from paciente where id = $idPaciente");
-$sqlBuscarPaciente->execute();
-$dadosPaciente = $sqlBuscarPaciente->fetchAll(PDO::FETCH_ASSOC);
+$dadosPaciente = select('paciente', "ID = $idPaciente");
 
 // Buscar por Convenios Cadastrados
-$sql = $conexao->prepare("SELECT * FROM convenios where (Psicologo = $_SESSION[id_psicologo])");
-$sql->execute();
-$listaconvenios = $sql->fetchALL();
+$listaconvenios = select('convenios', "Psicologo = $_SESSION[id_psicologo]");
 
 ?>
 

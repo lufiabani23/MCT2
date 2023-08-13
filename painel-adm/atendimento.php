@@ -214,7 +214,8 @@ foreach ($atendimentosPagina as $linha) {
 
                         $dadosPaciente = select('paciente', "ID = $idPaciente");
 
-                        $dadosConvenio = select('convenios', "ID = $dadosPaciente[0]['Convenio']");
+                        $idConvenio = $dadosPaciente[0]['Convenio'];
+                        $dadosConvenio = select('convenios', "ID = $idConvenio");
 
                         $dadosAtendimento = select('atendimento', "ID = $idAtendimento");
 

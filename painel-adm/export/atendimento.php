@@ -1,22 +1,31 @@
 <?php
 @session_start();
 $idAtendimento = $_GET['idAtendimento'];
-include_once("../../conexao.php");
+include_once("../../config.php");
 
+$dadosAtendimento = select('atendimento', "ID = $idAtendimento");
+/*
 $sqlBuscarAtendimento = $conexao -> prepare("SELECT * from atendimento where ID = $idAtendimento");
 $sqlBuscarAtendimento -> execute ();
 $dadosAtendimento = $sqlBuscarAtendimento -> fetch();
+*/
 
-
+$dadosPaciente = select('paciente', "ID = {$dadosAtendimento[0]['Paciente']}");
+/*
 $sqlBuscarPaciente = $conexao -> prepare("SELECT * from paciente where id = $dadosAtendimento[Paciente]");
 $sqlBuscarPaciente -> execute();
 $dadosPaciente = $sqlBuscarPaciente -> fetch();
+*/
 
+$dadosConvenio = select('convenios', "ID = {$dadosPaciente[0]['Convenio']}");
+
+/*
 $convenioPaciente = $dadosPaciente["Convenio"];
                         $sqlBuscarConvenio = $conexao->prepare("SELECT * FROM convenios WHERE (ID = :convenio_id)");
                         $sqlBuscarConvenio->bindValue(':convenio_id', $convenioPaciente);
                         $sqlBuscarConvenio->execute();
                         $dadosConvenio = $sqlBuscarConvenio->fetch();
+*/
 
 $visualizar = true;
 
@@ -37,9 +46,9 @@ $visualizar = true;
     <link rel="shortcut icon" href="../img/favicon/favicon.ico" type="image/x-icon">
     <link rel="icon" href="../img/favicon/favicon.ico" type="image/x-icon">
 
-    <title>Relatório de Atendimento <?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+    <title>Relatório de Atendimento <?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
                                         $formatoData = date("d/m", $dataInicio);
-                                        echo $formatoData; ?> - <?php echo $dadosPaciente["Nome"]; ?></title>
+                                        echo $formatoData; ?> - <?php echo $dadosPaciente[0]["Nome"]; ?></title>
 </head>
 
 <body>
@@ -63,21 +72,21 @@ $visualizar = true;
     <div class="row">
         <div class="col-md-2 col-sm-12">
             <div class=" text-center">
-                <?php if (isset($dadosPaciente["Foto"])) { ?>
-                    <img class="card-img-top foto-paciente " width="200em" src="../<?php echo $dadosPaciente["Foto"]; ?>"> <br><br>
+                <?php if (isset($dadosPaciente[0]["Foto"])) { ?>
+                    <img class="card-img-top foto-paciente " width="200em" src="../<?php echo $dadosPaciente[0]["Foto"]; ?>"> <br><br>
                 <?php } ?>
                 <?php if ($visualizar == 0) { ?>
-                    <h5><?php $dataInicio = strtotime($dadosAgendamento["Data_Inicio"]);
+                    <h5><?php $dataInicio = strtotime($dadosAgendamento[0]["Data_Inicio"]);
                         $formatoData = date("d/m - H:i", $dataInicio);
                         echo $formatoData; ?></h5>
                 <?php } else { ?>
-                    <h5><?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                    <h5><?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
                         $formatoData = date("d/m", $dataInicio);
                         echo $formatoData; ?> <br>
-                        Início: <?php $dataInicio = strtotime($dadosAtendimento["Data_Inicio"]);
+                        Início: <?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
                                 $formatoData = date("H:i", $dataInicio);
                                 echo $formatoData; ?> <br>
-                        Termínio: <?php $dataFim = strtotime($dadosAtendimento["Data_Fim"]);
+                        Termínio: <?php $dataFim = strtotime($dadosAtendimento[0]["Data_Fim"]);
                                     $formatoData = date("H:i", $dataFim);
                                     echo $formatoData; ?>
                     </h5>
@@ -85,20 +94,20 @@ $visualizar = true;
             </div>
         </div>
         <div class="col-md-4 col-sm-12">
-            <h4>Paciente: <?php echo $dadosPaciente["Nome"]; ?></h4>
-            <h5>Gênero: <?php echo $dadosPaciente["Genero"]; ?></h5>
-            <h5>Convênio: <?php echo $dadosConvenio["Nome"]; ?></h5>
+            <h4>Paciente: <?php echo $dadosPaciente[0]["Nome"]; ?></h4>
+            <h5>Gênero: <?php echo $dadosPaciente[0]["Genero"]; ?></h5>
+            <h5>Convênio: <?php echo $dadosConvenio[0]["Nome"]; ?></h5>
 
             <label for="Prontuario">Prontuário:</label>
-            <textarea readonly rows="4" id="Prontuario" class="form-control auto-resize"><?php echo $dadosPaciente["Prontuario"]; ?></textarea>
+            <textarea readonly rows="4" id="Prontuario" class="form-control auto-resize"><?php echo $dadosPaciente[0]["Prontuario"]; ?></textarea>
 
             <label for="Motivo">Motivo:</label>
-            <textarea class="form-control auto-resize" <?php if ($visualizar == 1) { echo "readonly"; } ?> id="Motivo"><?php if ($visualizar == 1) { echo $dadosAtendimento["Motivo"]; } else { echo $dadosAgendamento["Motivo"]; } ?></textarea>
+            <textarea class="form-control auto-resize" <?php if ($visualizar == 1) { echo "readonly"; } ?> id="Motivo"><?php if ($visualizar == 1) { echo $dadosAtendimento[0]["Motivo"]; } else { echo $dadosAgendamento[0]["Motivo"]; } ?></textarea>
 
         </div>
         <div class="col-md-5 col-sm-12">
             <label for="Registro">Registro:</label>
-            <textarea class="form-control auto-resize" <?php echo $visualizar == 1 ? "readonly" : "" ?> rows="13" id="Registro"><?php echo $visualizar == 1 ? $dadosAtendimento["Registro"] : "" ?></textarea>
+            <textarea class="form-control auto-resize" <?php echo $visualizar == 1 ? "readonly" : "" ?> rows="13" id="Registro"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["Registro"] : "" ?></textarea>
         </div>
     </div>
 
@@ -112,7 +121,7 @@ $visualizar = true;
                         <div class="input-group-prepend">
                             <div class="input-group-text">R$</div>
                         </div>
-                        <input type="number" id="Valor" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> placeholder="Valor do Atendimento" value="<?php echo $visualizar == 1 ? $dadosAtendimento["Valor"] : $dadosAgendamento['Valor']; ?>">
+                        <input type="number" id="Valor" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> placeholder="Valor do Atendimento" value="<?php echo $visualizar == 1 ? $dadosAtendimento[0]["Valor"] : $dadosAgendamento[0]['Valor']; ?>">
                     </div>
                 </div>
                 <div class="col-md-12 col-7">
@@ -126,7 +135,7 @@ $visualizar = true;
                             <option>Cartão crédito/débito</option>
                             <option>Outro</option>
                         <?php } else { ?>
-                            <option><?php echo $dadosAtendimento["Forma_Pgto"]; ?></option>
+                            <option><?php echo $dadosAtendimento[0]["Forma_Pgto"]; ?></option>
                         <?php } ?>
 
                     </select>
@@ -136,13 +145,13 @@ $visualizar = true;
 
         <div class="col-md-5 col-sm-12">
             <label for="OBS">OBS.</label>
-            <textarea rows="4" class="form-control auto-resize" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento["OBS"] : $dadosAgendamento['OBS.']; ?></textarea>
+            <textarea rows="4" class="form-control auto-resize" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["OBS"] : $dadosAgendamento[0]['OBS.']; ?></textarea>
         </div>
     </div>
 
     <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
-    <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente["ID"]; ?>">
-    <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento["ID"]; ?>">
+    <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente[0]["ID"]; ?>">
+    <input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento[0]["ID"]; ?>">
 </div>
 
 

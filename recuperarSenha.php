@@ -2,7 +2,7 @@
 
 <?php 
 
-include_once('conexao.php');
+include_once('config.php');
  /*
 $buscarPsicologo -> prepare ("SELECT * from psicologo where ID = :id");
 $buscarPsicologo -> bindParam (':id' , $idPsicologo);
@@ -15,10 +15,14 @@ if (isset($_GET['id'])) {
 
 if (isset($_POST['btnAlterarSenha'])) {
     $senhaNova = md5($_POST['senhaNova']);
+    $dados = array('Senha' => $senhaNova);
+    update('psicologo', $dados, "ID = $idPsicologo");
+    /*
     $sqlAlterarSenha = $conexao -> prepare("UPDATE psicologo SET Senha = :senhaNova where ID = :id");
     $sqlAlterarSenha -> bindParam (':senhaNova' , $senhaNova);
     $sqlAlterarSenha -> bindParam (':id', $idPsicologo);
     $sqlAlterarSenha -> execute();
+    */
 
     echo "<script language='javascript'>alert('Senha alterada com sucesso. Faça login novamente no Sistema!');</script>";
     echo "<script language='javascript'>window.location='index.php';</script>";
@@ -30,6 +34,6 @@ if (isset($_POST['btnAlterarSenha'])) {
 
 <form action="" method="POST">
     <label>Digite sua nova senha:</label>
-    <input name="senhaNova">
+    <input name="senhaNova" type="password">
     <button type="submit" name="btnAlterarSenha">Alterar</button>
 </form>
