@@ -1,18 +1,22 @@
 <?php
+@session_start();
 $Nnotificacoes = 0;
 require_once("../config.php");
 $conexao = conectar();
-@session_start();
+
 
 //Se não estiver setado o nome do psicologo ele vai retornar a tela inicial - segurança
 if (!isset($_SESSION['nome_psicologo'])) {
-    header("location: ../index.php");
+    echo "<script language='javascript'> window.location='index.php'; </script>";
 };
 
 // Busca dos pacientes - array com todos os pacientes
-$where = "Psicologo = $_SESSION[id_psicologo] order by Nome asc";
+$id = $_SESSION['id_psicologo'];
+$where = "Psicologo = $id";
 $listapacientes = select('paciente', $where);
-$_SESSION['totalPacientes'] = count($listapacientes); //Quantidade total de pacientes para tela incial
+$_SESSION['totalPacientes'] = count($listapacientes); // Quantidade total de pacientes para tela inicial
+
+
 
 
 

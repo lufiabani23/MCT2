@@ -119,7 +119,7 @@ $conexao = conectar();
 if (isset($_POST['btnRecuperarSenha'])) {
     $emailRecuperar = $_POST['emailRecuperar'];
 
-    $resultadoEmail = select('psicologo', "Email = $emailRecuperar");
+    $resultadoEmail = select('psicologo', "Email = '$emailRecuperar'");
 
     /*
     $sqlVerificaEmail = $conexao->prepare("SELECT * FROM psicologo WHERE Email = :email");
@@ -139,8 +139,8 @@ if (isset($_POST['btnRecuperarSenha'])) {
         Você solicitou a alteração da senha de acesso ao SystemPsi. <br>
         Caso você não tenha feito esta solicitação, ignore esta mensagem! <br><br>
 
-        Para alterar sua senha, acesse este link e faça a alteração. " . '<a href="systempsi.xyz/recuperarSenha.php?id='."$idRecuperar".'">Alterar Senha</a>' . "<br>
-        Para acessar ao sistema, ". '<a href="systempsi.xyz">clique aqui.</a>' . "<br><br>
+        Para alterar sua senha, acesse este link e faça a alteração. " . '<a href="systempsi.com.br/recuperarSenha.php?id='."$idRecuperar".'">Alterar Senha</a>' . "<br>
+        Para acessar ao sistema, ". '<a href="systempsi.com.br">clique aqui.</a>' . "<br><br>
 
         Caso tenha alguma dificuldade para fazer o acesso ao sistema, responda este e-mail com a sua dúvida. <br> <br>
 
