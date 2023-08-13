@@ -61,7 +61,7 @@ $(document).ready(function() {
                 id: '<?php echo $event['ID']; ?>',
                 title: '<?php echo $event['Paciente']; ?>',
                 motivo: '<?php echo $event['Motivo']; ?>',
-                obs: '<?php echo $event['OBS.']; ?>',
+                obs: '<?php echo $event['OBS']; ?>',
                 valor: '<?php echo $event['Valor']; ?>',
                 start: '<?php echo $start; ?>',
                 end: '<?php echo $end; ?>',

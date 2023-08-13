@@ -227,7 +227,7 @@ if (isset($_POST['btnEditarPaciente'])) {
       'Prontuario' => $_POST['Prontuario'],
       'Endereco' => $_POST['Endereco']
     );
-    update ('paciente', $dados, $idEditarPaciente);
+    update ('paciente', $dados, "ID = $idEditarPaciente");
     
     echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
   } catch (PDOException $e) {

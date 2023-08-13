@@ -19,15 +19,15 @@ function conectar() {
 }
 
 
-function select($tabela, $where = null) {
+function select($tabela, $where = null, $coluna = "*") {
     $conexao = conectar();
 
     try {
         if (isset($where)) {
-            $sql = "SELECT * FROM $tabela WHERE $where";
+            $sql = "SELECT $coluna FROM $tabela WHERE $where";
             $stmt = $conexao->prepare($sql);
         } else {
-            $sql = "SELECT * FROM $tabela";
+            $sql = "SELECT $coluna FROM $tabela";
             $stmt = $conexao->prepare($sql);
         }
 
@@ -41,34 +41,41 @@ function select($tabela, $where = null) {
 }
 
 function insert($tabela, $dados) {
-    $conexao = conectar();
-    $campos = array();
-    $valores = array();
-    
-    foreach ($dados as $campo => $valor) {
-        $campos[] = $campo;
-        $valores[] = ":$campo";
-    }
-    
-    $campos_string = implode(', ', $campos);
-    $valores_string = implode(', ', $valores);
-    
-    $query = "INSERT INTO $tabela ($campos_string) VALUES ($valores_string)";
-    
-    $stmt = $conexao->prepare($query);
-    
-    foreach ($dados as $campo => $valor) {
-        $stmt->bindValue(":$campo", $valor);
-    }
-    
-    if ($stmt->execute()) {
-        return $conexao -> lastInsertId(); // Inserção bem-sucedida
-    } else {
-        return false; // Erro na inserção
+    try {
+        $conexao = conectar();
+        $campos = array();
+        $valores = array();
+
+        foreach ($dados as $campo => $valor) {
+            $campos[] = $campo;
+            $valores[] = ":$campo";
+        }
+
+        $campos_string = implode(', ', $campos);
+        $valores_string = implode(', ', $valores);
+
+        $query = "INSERT INTO $tabela ($campos_string) VALUES ($valores_string)";
+
+        $stmt = $conexao->prepare($query);
+
+        foreach ($dados as $campo => $valor) {
+            $stmt->bindValue(":$campo", $valor);
+        }
+
+        if ($stmt->execute()) {
+            //return $conexao->lastInsertId(); // Inserção bem-sucedida
+        } else {
+            return false; // Erro na inserção
+        }
+    } catch (PDOException $e) {
+        // Aqui você pode lidar com a exceção da forma desejada
+        echo "Erro ao executar a consulta: " . $e->getMessage();
+        return false; // Ou outro tratamento de erro apropriado
     }
 }
 
-function delete ($tabela, $where) {
+
+function delete($tabela, $where) {
     $conexao = conectar();
 
     try {
@@ -81,28 +88,37 @@ function delete ($tabela, $where) {
     }
 }
 
-function update($tabela, $dados, $id) {
-    $conexao = conectar();
-    $campos = array();
-    foreach ($dados as $campo => $valor) {
-        $campos[] = "$campo = :$campo";
-    }
-    $campos_string = implode(', ', $campos);
-
-    $query = "UPDATE $tabela SET $campos_string WHERE id = $id";
-
-    $stmt = $conexao->prepare($query);
-
-    foreach ($dados as $campo => $valor) {
-        $stmt->bindValue(":$campo", $valor);
-    }
-
-    if ($stmt->execute()) {
-        return true; // Atualização bem-sucedida
-    } else {
-        return false; // Erro na atualização
+function update($tabela, $dados, $where) {
+    try {
+        $conexao = conectar();
+        $campos = array();
+        
+        foreach ($dados as $campo => $valor) {
+            $campos[] = "$campo = :$campo";
+        }
+        
+        $campos_string = implode(', ', $campos);
+        
+        $query = "UPDATE $tabela SET $campos_string WHERE $where";
+        
+        $stmt = $conexao->prepare($query);
+        
+        foreach ($dados as $campo => $valor) {
+            $stmt->bindValue(":$campo", $valor);
+        }
+        
+        if ($stmt->execute()) {
+            return true; // Atualização bem-sucedida
+        } else {
+            return false; // Erro na atualização
+        }
+    } catch (PDOException $e) {
+        // Aqui você pode lidar com a exceção da forma desejada
+        echo "Erro ao executar a atualização: " . $e->getMessage();
+        return false; // Ou outro tratamento de erro apropriado
     }
 }
+
 
 ?>
 
