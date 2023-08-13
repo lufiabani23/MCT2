@@ -2,6 +2,8 @@
 
 //ARQUIVO COM AS CONFIGURAÇÕES/FUNÇÕES NECESSÁRIAS NO SISTEMA - PADRONIZAÇÃO
 
+require 'vendor/autoload.php'; // Caminho para o autoload do Composer
+
 date_default_timezone_set('America/Sao_Paulo'); // Defina o fuso horário correto para o Brasil
 
 
