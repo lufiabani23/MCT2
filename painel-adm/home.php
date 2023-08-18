@@ -1,5 +1,9 @@
 <?php
 @session_start();
+
+/*
+O Home é responsável pelos cards inciais com as informações
+*/
 ?>
 
 <div class="bemvindo d-none d-lg-block ml-4">

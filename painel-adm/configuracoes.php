@@ -1,5 +1,13 @@
 <?php
-//ADICIONAR e ALTERAR CONVENIO
+/*
+Este código tem as opções de configurações
+Ele adiciona e altera os convênios cadastrados
+Edita as informações pessoais do psicólogo (até a senha)
+Também altera a consulta particular (valor não está sendo utilizado)
+*/
+
+
+//Sistema para adicionar ou editar um convênio
 if (isset($_POST['btnNovoConvenio'])) {
     if (!empty($_POST['idConvenio'])) {
         $dados = array('Nome' => $_POST['nomeconvenio'], 'Valor_Consulta' => $_POST['valorconsulta']);
@@ -12,8 +20,7 @@ if (isset($_POST['btnNovoConvenio'])) {
     }
 }
 
-// EDITAR PSICOLOGO
-
+// Sistema para editar os dados pessoais do psicólogo
 if (isset($_POST['btnEditarPsicologo'])) {
     if ($_POST['senhaPsicologo'] == "") {
         $senhaSQL = $_POST['senhaPsicologo'];
@@ -36,11 +43,11 @@ if (isset($_POST['btnEditarPsicologo'])) {
 }
 
 
-//BUCAR CONVENIOS
+//Sistema para buscar convênios além do convênio particular
 $where = "(Nome != 'Particular') and Psicologo = $_SESSION[id_psicologo]";
 $listaconvenios = select('convenios', $where);
 
-// APAGAR CONVENIO
+//Sistema para excluir o convênio - se tiver pacientes vinculados, não exclui
 if (isset($_GET['btnApagarConvenio'])) {
     $idApagarConvenio = $_GET['ID'];
     //dentro do try somente para verificação de pacientes vinculados
@@ -54,7 +61,7 @@ if (isset($_GET['btnApagarConvenio'])) {
         }
 }
 
-// ALTERAR VALOR PARTICULAR
+// Sistema de edição do valor da consulta particular
 if (isset($_POST['btnNovoParticular'])) {
     $novoValorCovenio = $_POST['novoValor'];
     $sqlNovoValorConvenio = $conexao->prepare("UPDATE convenios SET Valor_Consulta = $novoValorCovenio WHERE (Nome = 'Particular' and Psicologo = $_SESSION[id_psicologo])");

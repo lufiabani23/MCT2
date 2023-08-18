@@ -1,31 +1,54 @@
 <?php
-// Busca agendamentos e pacientes com agendamento para aquele dia
-date_default_timezone_set('America/Sao_Paulo');
 @session_start();
 
+/*
+Este código faz a busca por agendamentos para o dia de hoje.
+O código também procura todos os atendimentos passados de pacientes em situação 1 (ativa).
+Ele busca o agendamento ou atendimento e "sincroniza" através de um loop os dados do paciente com os dados do atendimento/agendamento
+*/
 
-//BUSCAR AGENDAMENTOS PARA HOJE
-$datetimeToday = date('Y-m-d ');
-$dataInicio = $datetimeToday . "23:59:59";
-$dataFim = $datetimeToday . "00:00:00";
-$where = "Psicologo = $_SESSION[id_psicologo] AND Data_Inicio > '$dataInicio' AND Data_Inicio < '$dataFim' AND Realizado = 0";
+//Sistema para buscar os agendamentos para o dia de hoje
+
+//Organizando os horários
+$datetimeToday = date('Y-m-d');
+$dataInicio = $datetimeToday . " 00:00:00";
+$dataFim = $datetimeToday . " 23:59:59";
+
+
+//Buscando os agendamentos dentro do período do dia que não foram realizados "Realizado=0"
+$where = "Psicologo = " . $_SESSION['id_psicologo'] . " AND Data_Inicio >= '$dataInicio' AND Data_Inicio <= '$dataFim' AND Realizado = 0";
 $listaAgendamentos = select('agendar', $where);
 
-// BUSCAR ATENDIMENTOS PASSADOS
-$listaAtendimentos = select('atendimento', "Psicologo = $_SESSION[id_psicologo]");
-
-
+//Vou pegar cada ID de paciente de cada agendamento, consultar suas informações e armazenar numa array na ordem dos agendamentos.
 $listaPacientes = array(); // Inicializa a variável $listaPacientes como um array vazio
-
-// CONVERTER O AGENDAMENTO EM PACIENTE
-foreach ($listaAgendamentos as $linha) {
+foreach ($listaAgendamentos as $indice => $linha) {
     $idPaciente = $linha["Paciente"];
     $paciente = select('paciente', "ID = $idPaciente");
 
-    $listaPacientes[] = $paciente;
+    $listaPacientes[$indice] = $paciente[0]; // Adiciona o paciente ao array $listaPacientes
 }
 
-// INSERINDO (FINALIZANDO) ATENDIMENTO
+
+//Sistema para buscar atendimentos passados de pacientes ativos
+
+//Buscar pelos pacientes ativos
+$pacientes = select('paciente', "Psicologo = $_SESSION[id_psicologo] and Situacao = '1'");
+//Passar por cada paciente, pegar seu ID e consultar os atendimentos vinculados à ele e armazenar numa array. Ordem de ID
+$listaAtendimentos = array(); // Inicializa a lista de atendimentos
+foreach ($pacientes as $paciente) {
+    $idPaciente = $paciente["ID"];
+
+    $where = "Psicologo = $_SESSION[id_psicologo] AND Paciente = $idPaciente ORDER BY ID DESC";
+    $atendimentos = select('atendimento', $where);
+
+    $listaAtendimentos = array_merge($listaAtendimentos, $atendimentos); // Adiciona os atendimentos encontrados à lista geral
+}
+
+
+
+// Sistema para finalizar uma atendimento - inserir um atendimento
+
+//Este sistema insere na tabela atendimento e altera a tabela do agendamento para "já realizado"
 if (isset($_POST['btnFinalizarAtendimento'])) {
     $idAgendamento = $_POST['idAgendamento'];
 
@@ -45,7 +68,7 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
         "Data_Fim" => $dataFim,
         "Motivo" => $motivo,
         "Valor" => $valor,
-        "formaPGTO" => $formaPGTO,
+        "Forma_Pgto" => $formaPGTO,
         "Registro" => $registro,
         "OBS" => $OBS,
         "Paciente" => $idPaciente, 
@@ -61,10 +84,14 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
     echo "<script language='javascript'> window.location='index.php?acao=$item4&alert=success'; </script>";
 }
 
-// Sistema para buscar atendimentos - CONVERSÃO DE ATENDIMENTO PARA PACIENTE
-if (isset($_GET['btnBuscarAtendimentos']) && $_GET['txtBuscarAtendimentos'] != "") {
-    $pacientes = select ('paciente', "Nome LIKE $txtBuscarAtendimentos");
+//Sistema para buscar atendimentos pela barra de pesquisa via nome
 
+//Verifica se foi escrito algo na pesquisa. Se sim, zera a array de atendimentos, pesquisa o paciente de novo e armazena novas informações
+//Se não, mantém os dados gerais iniciais.
+if (isset($_GET['btnBuscarAtendimentos']) && !empty($_GET['txtBuscarAtendimentos'])) {
+    $txtBuscarAtendimentos = $_GET['txtBuscarAtendimentos'];
+    // Utiliza % para permitir busca flexível
+    $pacientes = select('paciente', "Nome LIKE '%$txtBuscarAtendimentos%' AND Situacao = 1");
 
     if (count($pacientes) > 0) {
         $listaAtendimentos = array(); // Inicializa a lista de atendimentos
@@ -77,14 +104,12 @@ if (isset($_GET['btnBuscarAtendimentos']) && $_GET['txtBuscarAtendimentos'] != "
 
             $listaAtendimentos = array_merge($listaAtendimentos, $atendimentos); // Adiciona os atendimentos encontrados à lista geral
         }
-    } else {
-        $listaAtendimentos = array(); // Caso nenhum paciente seja encontrado, a lista de atendimentos será vazia
     }
-} else {
-    $listaAtendimentos = select ('atendimento', "Psicologo = $_SESSION[id_psicologo] ORDER BY ID DESC");
 }
 
-$listaPacientesAtendimentos = array(); // Inicializa a variável $listaPacientesAtendimentos como um array vazio
+//Sistema para paginação dos atendimentos realizados
+//Ele divide a array geral em indice inicial e até quando deve ir (indice final)
+
 
 // Definir o número de itens por página
 $itensPorPagina = 6;
@@ -105,12 +130,19 @@ $indiceFinal = $indiceInicial + $itensPorPagina;
 // Obter os atendimentos a serem exibidos na página atual
 $atendimentosPagina = array_slice($listaAtendimentos, $indiceInicial, $itensPorPagina);
 
+$listaPacientesAtendimentos = array(); // Inicializa a variável $listaPacientesAtendimentos como um array vazio
+
+//Selecionar os dados dos pacientes dos atendimentos em ordem dos atendimentos (por ordem de ID)
 foreach ($atendimentosPagina as $linha) {
+    $idPaciente = $linha["Paciente"];
+    $paciente = select('paciente', "ID = $idPaciente and Situacao = 1");
 
-    $paciente = select ('paciente', "ID = $linha[Paciente]");
-
-    $listaPacientesAtendimentos[] = $paciente[0];
+    if (!empty($paciente)) {
+        $listaPacientesAtendimentos[] = $paciente[0];
+    }
 }
+
+// Através do  loop e do indice, como os dados foram buscados na mesma ordem em arrays diferentes, é só listar em ordem
 ?>
 
 <h1 class="ml-2">Próximos atendimentos</h1>
@@ -119,7 +151,7 @@ foreach ($atendimentosPagina as $linha) {
         <?php foreach ($listaAgendamentos as $indice => $linha) { ?>
             <div class="col-md-4 col-sm-12 mb-2">
                 <div class="card card-atendimento">
-                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]['ID']; ?>&idAgendamento=<?php echo $listaAgendamentos[$indice]["ID"]; ?>" class="card-atendimento">
+                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]["ID"]; ?>&idAgendamento=<?php echo $linha["ID"]; ?>" class="card-atendimento">
                         <div class="card-body card-atendimento-body">
                             <div class="row">
                                 <div class="col-5">
@@ -129,10 +161,13 @@ foreach ($atendimentosPagina as $linha) {
                                 </div>
                                 <div class="col-7">
                                     <h2 class="card-title"><?php echo $listaPacientes[$indice]["Nome"]; ?></h2>
-                                    <h5 class="card-text"><?php
-                                                            $dataInicio = strtotime($linha["Data_Inicio"]);
-                                                            $formatoData = date("d/m H:i", $dataInicio);
-                                                            echo $formatoData; ?></h5>
+                                    <h5 class="card-text">
+                                        <?php
+                                        $dataInicio = strtotime($linha["Data_Inicio"]);
+                                        $formatoData = date("d/m H:i", $dataInicio);
+                                        echo $formatoData;
+                                        ?>
+                                    </h5>
                                 </div>
                             </div>
                         </div>
@@ -231,7 +266,8 @@ foreach ($atendimentosPagina as $linha) {
 
                     $dadosPaciente = select('paciente', "ID = $idPaciente");
 
-                    $dadosConvenio = select('convenios', "ID = $dadosPaciente[0][Convenio]");
+                    $idConvenio = $dadosPaciente[0]['Convenio'];
+                    $dadosConvenio = select('convenios', "ID = $idConvenio");
 
                     $dadosAgendamento = select('agendar', "ID = $idAgendamento");
                 }
@@ -322,7 +358,7 @@ foreach ($atendimentosPagina as $linha) {
 
                             <div class="col-md-5 col-sm-12">
                                 <label for="OBS">OBS.</label>
-                                <textarea rows="4" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS" name="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["OBS"] : $dadosAgendamento[0]['OBS.']; ?></textarea>
+                                <textarea rows="4" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS" name="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["OBS"] : $dadosAgendamento[0]['OBS']; ?></textarea>
                             </div>
                         </div>
 

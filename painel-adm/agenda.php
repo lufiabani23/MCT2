@@ -1,11 +1,15 @@
 <?PHP
 include_once('../alerts.php');
 
-// ADICIONAR AGENDAMENTO
+/*Este código inclui o calendário de outro arquivo.
+Ele faz a inserção, edição e exclusão de agendaments.
+*/
+
+// Sistema para adicionar um novo agendamento
 if (isset($_POST['btnNovoAgendamento'])) {
   $idPaciente = select('paciente', "Nome = '$_POST[NomePaciente]'");
 
-  //FORMATAÇÃO DO TEMPO DO ATENDIMENTO
+  //Formatar a data e hora dos agendamentos - a duração é padrão de 45 minutos
   $dataDia = $_POST['DataAgendamento'];
   $horaAgendamento = $_POST['HoraAgendamento'];
   $minutoAgendamento = $_POST['MinutoAgendamento'];
@@ -25,11 +29,11 @@ if (isset($_POST['btnNovoAgendamento'])) {
   );
 
   insert('agendar', $dados);
-  //echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
+  echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
 }
 
 
-// EDITAR AGENDAMENTO
+// Processo de edição e exclusão de um agendamento
 if (isset($_POST['btnEditarAgendamento'])) {
 
   $idEvento = $_POST['idEvento'];
@@ -39,7 +43,7 @@ if (isset($_POST['btnEditarAgendamento'])) {
     delete('agendar', "ID = $idEvento");
     echo "<script language='javascript'> window.location='index.php?acao=$item3&alert=success'; </script>";
   } else {
-    //TRATAMENTO DE DATA
+    //Processamento da data e hora do agendamento
     $dataDia = $_POST['DataAgendamento'];
     $horaAgendamento = $_POST['HoraAgendamento'];
     $minutoAgendamento = $_POST['MinutoAgendamento'];
@@ -103,7 +107,7 @@ if (isset($_POST['btnEditarAgendamento'])) {
             <div class="form-group col-md-3 col-sm-12">
               <label for="DataAgendamento">Data</label>
               <input class="form-control" type="date" id="DataAgendamento" name="DataAgendamento"
-                placeholder="Data do Agendamento">
+                placeholder="Data do Agendamento" required>
             </div>
           </div>
 
@@ -268,26 +272,16 @@ if (isset($_POST['btnEditarAgendamento'])) {
 
 <div class="calendarioAgenda">
   <?php
+  //Importação do calendário externo com os dados.
   date_default_timezone_set('America/Sao_Paulo');
   $db = $conexao;
 
-  // BUSCA OS EVENTOS CADASTRADOS
+  // Consulta para buscar os agendamentos cadastrados
   $events = select('agendar', "Psicologo = $_SESSION[id_psicologo]");
-  /*
-  $sql = "SELECT * FROM agendar WHERE Psicologo = {$_SESSION['id_psicologo']}";
-  $req = $db->prepare($sql);
-  $req->execute();
-  $events = $req->fetchAll();
-  */
 
-  // CONVERTE O ID DO PACIENTE PARA O NOME DELE
+  // Sistema de conversão - pega cada paciente de cada agendamento e busca o nome do paciente e armazena numa array na coluna Paciente
   foreach ($events as $i => $linha) {
     $nomePaciente = select('paciente', "ID = $linha[Paciente]", "Nome");
-    /*
-    $sqlPaciente = $db->prepare("SELECT Nome FROM paciente WHERE ID = {$linha['Paciente']}");
-    $sqlPaciente->execute();
-    $nomePaciente = $sqlPaciente->fetchAll();
-    */
     $events[$i]["Paciente"] = $nomePaciente[0][0];
   }
   ?>
@@ -318,11 +312,6 @@ if (isset($_POST['btnEditarAgendamento'])) {
 
 
   </div>
-
-
-
-  <!-- Bootstrap Core JavaScript NÃO ABRE O MENU // importado direto do código do sistema -->
-
 
   <!-- FullCalendar -->
 

@@ -2,29 +2,29 @@
 <script src="../js/mascaras.js"></script>
 
 <?php
-include_once('../alerts.php');
 @session_start();
+include_once('../alerts.php');
 
+/*
+Este código faz diversas funções
+Ele lista os pacientes cadastrados que tem situação igual a 1 - ativos.
+Ele edita os pacientes e arquiva os pacientes - situacao igual a 0.
+Ele faz o tratamento de arquivos/fotos e tem um sistema de busca pelo nome.
+Dentro do modal de editar ainda tem o processo de emissão de relatórios
+*/
 
-//O convenio com nome "Particular" é cadastrado automaticamente em AUTENTICAR.PHP
+//O convenio com nome "Particular" é cadastrado automaticamente em AUTENTICAR.PHP -  os convenios são buscados no index
 
-// Buscar por Convenios Cadastrados
-$where = "Psicologo = $_SESSION[id_psicologo]";
-$listaconvenios = select('convenios', $where);
-
-// Sistema para buscar pacientes
+// Sistema para buscar pacientes através da busca via texto - se não, ele irá listar todos os ativos (index)
 if (isset($_GET['btnBuscarPacientes']) and $_GET['txtBuscarPacientes'] != "") {
   $txtBuscarPaciente = "%" . $_GET['txtBuscarPacientes'] . "%";
-  $where = "Nome like '$txtBuscarPaciente' order by Nome asc";
-  $listapacientes = select('paciente', $where);
-} else {
-  $where = "Psicologo = $_SESSION[id_psicologo] order by Nome asc";
+  $where = "Nome like '$txtBuscarPaciente' and Situacao = 1 order by Nome asc";
   $listapacientes = select('paciente', $where);
 }
 ?>
 
 <?php
-//INSERIR NOVO PACIENTE
+//Inserção de novo paciente e tratamento de fotos/anexos
 if (isset($_POST['btnNovoPaciente'])) {
   if (!empty($_FILES['Foto']['name'])) {
     // Obter informações sobre o arquivo de foto
@@ -104,7 +104,7 @@ if (isset($_POST['btnNovoPaciente'])) {
   }
 }
 
-// EDITAR PACIENTE
+// Processo de edição de pacientes - tratamento de fotos/anexos
 if (isset($_POST['btnEditarPaciente'])) {
   $idEditarPaciente = $_GET['id'];
 
@@ -236,7 +236,18 @@ if (isset($_POST['btnEditarPaciente'])) {
 }
 
 
+if(@$_GET['funcao'] == "arquivar") {
+  $idArquivar = $_GET['id'];
+  
+  $dados = array(
+    'Situacao' => 0
+  );
+  update('paciente ', $dados, "ID = $idArquivar");
+  echo "<script language='javascript'> window.location='index.php?acao=$item2&alert=success'; </script>";
+}
 
+
+//Processo da antiga exclusão de pacientes.
 if (@($_GET['funcao']) == "exclusao") {
   $idexclusao = $_GET['id'];
   // Procura atendimentos futuros do paciente
@@ -276,7 +287,7 @@ if (@($_GET['funcao']) == "exclusao") {
 ?>
 
 <?php
-// ABRIR MODAL
+// Função JavaScript para abrir o mesmo modal de editar e adicionar novo
 if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
   if (isset($_GET['id'])) {
     $idEditarPaciente = $_GET['id'];
@@ -288,6 +299,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
   }
   ;
   ?>
+
   <!-- MODAL DE PACIENTE -->
   <div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalPaciente" tabindex="-1" role="dialog"
     aria-labelledby="#modalPaciente" aria-hidden="true">
@@ -483,7 +495,7 @@ if (@($_GET['funcao']) == "editar" or @($_GET['funcao']) == "novo") {
 
 <?php
 
-// MODAL EXCLUIR PACIENTE
+// Modal da antiga exclusão de paciente
 if (@($_GET['funcao']) == "excluir") {
   $idexclusao = $_GET['id']; ?>
   <div class="modal fade" id="ConfirmExclusaoPaciente" tabindex="-1" role="dialog"
@@ -571,13 +583,8 @@ if (@($_GET['funcao']) == "excluir") {
             </td>
             <td>
               <?php
-              // Converter o ID convenio para Nome Convenio
+              // Processo de conversão do ID do convênio para o nome do convênio do paciente
               $nomeConvenio = select('convenios', "ID = $linha[Convenio]");
-              /*
-              $sqlNomeConvenio = $conexao->prepare("SELECT Nome FROM convenios where (ID = '$linha[Convenio]')");
-              $sqlNomeConvenio->execute();
-              $nomeConvenio = $sqlNomeConvenio->fetchAll(PDO::FETCH_ASSOC);
-              */
               if (count($nomeConvenio) == 1) {
                 echo $nomeConvenio[0]['Nome'];
               }
@@ -587,8 +594,12 @@ if (@($_GET['funcao']) == "excluir") {
               <?php echo $linha['Telefone'] ?>
             </td>
             <td>
+              <!--
               <a href="index.php?acao=<?php echo $item2; ?>&funcao=excluir&id=<?php echo $linha['ID']; ?>"
-                class="btn btn-danger mt-1" id="btnExcluir"> Excluir </a>
+                class="btn btn-danger mt-1" id="btnExcluir">Excluir</a>
+            -->
+            <a href="index.php?acao=<?php echo $item2; ?>&funcao=arquivar&id=<?php echo $linha['ID']; ?>"
+                class="btn btn-danger mt-1" id="btnExcluir">Arquivar</a>
               <a href="index.php?acao=<?php echo $item2; ?>&funcao=editar&id=<?php echo $linha['ID']; ?>"
                 class="btn btn-warning mt-1">Editar</a>
             </td>

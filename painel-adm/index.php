@@ -4,22 +4,32 @@ $Nnotificacoes = 0;
 require_once("../config.php");
 $conexao = conectar();
 
+/*
+O código é responsável pelo menu
+Sistema de rotas via ACAO
+Sistema de manter selecionado no menu
+Cabeçalho e rodapé
+Buscas gerais no banco (convenio e pacientes)
+*/
+
 
 //Se não estiver setado o nome do psicologo ele vai retornar a tela inicial - segurança
 if (!isset($_SESSION['nome_psicologo'])) {
     echo "<script language='javascript'> window.location='index.php'; </script>";
 };
 
-// Busca dos pacientes - array com todos os pacientes
+$where = "Psicologo = $_SESSION[id_psicologo]";
+$listaconvenios = select('convenios', $where);
+
+// Busca dos pacientes - array com todos os pacientes com situacao 2 ativos
 $id = $_SESSION['id_psicologo'];
-$where = "Psicologo = $id";
+$where = "Psicologo = $id and Situacao = 1 order by Nome asc";
 $listapacientes = select('paciente', $where);
 $_SESSION['totalPacientes'] = count($listapacientes); // Quantidade total de pacientes para tela inicial
 
 
 
-
-
+//Manipulação de datas e busca para contagem dos cards iniciais
 // Data de hoje
 $datetimeToday = date('Y-m-d');
 // Data daqui a 7 dias
@@ -36,17 +46,18 @@ $where = "Psicologo = $_SESSION[id_psicologo] AND Data_Inicio >= $datetimeToday 
 $listaAgendamentosHoje = select('agendar', $where);
 $_SESSION['totalAgendamentosHoje'] = count($listaAgendamentosHoje);
 
-//ITENS DO MENU E DAS PAGINAS
+//Variável com os itens dos menus para redirecionamenot/rotas
 $item1 = 'home';
 $item2 = 'pacientes';
 $item3 = 'agenda';
 $item4 = 'atendimento';
 $item5 = 'configuracoes';
 $item6 = 'notificacoes';
+$item7 =  'arquivados';
 $suporte = 'suporte';
 $novopsi = 'novopsi';
 
-//Verificar qual o menu clicado
+//Sistema de verificação do clique do menu - os botões de search também estão incluidos no sistema de rotas
 
 $item1ativo = ''; // Inicializa a variável $item1ativo
 $item2ativo = ''; // Inicializa a variável $item2ativo
@@ -54,6 +65,7 @@ $item3ativo = ''; // Inicializa a variável $item3ativo
 $item4ativo = ''; // Inicializa a variável $item4ativo
 $item5ativo = ''; // Inicializa a variável $item5ativo
 $item6ativo = ''; // Inicializa a variável $item6ativo
+$item7ativo = ''; // Inicializa a variável $item7ativo
 $suporteativo = ''; // Inicializa a variável $suporteativo
 
 if (@$_GET['acao'] == $item1) {
@@ -68,6 +80,8 @@ if (@$_GET['acao'] == $item1) {
     $item5ativo = 'active';
 } elseif (@$_GET['acao'] == $item6) {
     $item6ativo = 'active';
+}elseif (@$_GET['acao'] == $item7 or isset($_GET['btnBuscarPacientesArquivados'])) {
+        $item7ativo = 'active';
 } elseif (@$_GET['acao'] == $suporte) {
     $suporteativo = 'active';
 } else {
@@ -128,6 +142,8 @@ if (@$_GET['acao'] == $item1) {
 
                 <a class="nav-link <?php echo $item4ativo ?>" id="v-pills-settings-tab" href="index.php?acao=<?php echo $item4 ?>" role="tab" aria-controls="v-pills-settings" aria-selected="false"><i class="bi bi-pencil-square mr-3"></i>Atendimento</a>
 
+                <a class="nav-link <?php echo $item7ativo ?>" id="v-pills-settings-tab" href="index.php?acao=<?php echo $item7 ?>" role="tab" aria-controls="v-pills-settings" aria-selected="false"><i class="bi bi-archive-fill mr-3"></i>Pacientes Arquivados</a>
+
                 <a class="nav-link <?php echo $item5ativo ?>" id="v-pills-settings-tab" href="index.php?acao=<?php echo $item5 ?>" role="tab" aria-controls="v-pills-settings" aria-selected="false"><i class="bi bi-gear-fill mr-3"></i>Configurações</a>
 
                 <?php if ($Nnotificacoes > 0) { ?>
@@ -141,7 +157,7 @@ if (@$_GET['acao'] == $item1) {
             <div class="tab-content" id="v-pills-tabContent">
 
                 <div class="tab-pane fade show active" role="tabpanel">
-                    <?php // REDIRECIONAMENTO DAS PÁGINAS
+                    <?php //Sistema de rotas com redirecionamento apartir da ACAO e botões de Search
                     if (@$_GET['acao'] == $item1)
                         include_once($item1 . ".php");
                     elseif (@$_GET['acao'] == $item2 or isset($_GET['btnBuscarPacientes']))
@@ -154,6 +170,8 @@ if (@$_GET['acao'] == $item1) {
                         include_once($item5 . ".php");
                     elseif (@$_GET['acao'] == $item6)
                         include_once($item6 . ".php");
+                    elseif (@$_GET['acao'] == $item7 or isset($_GET['btnBuscarPacientesArquivados']))
+                        include_once($item7 . ".php");
                     elseif (@$_GET['acao'] == $suporte)
                         include_once($suporte . ".php");
                     elseif (@$_GET['acao'] == $novopsi)
