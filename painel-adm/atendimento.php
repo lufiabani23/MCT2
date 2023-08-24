@@ -201,7 +201,7 @@ foreach ($atendimentosPagina as $linha) {
         <?php foreach ($atendimentosPagina as $indice => $linha) { ?>
             <div class="col-md-4 col-sm-12 mb-2">
                 <div class="card card-atendimento">
-                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=visualizarAtendimento&idPaciente=<?php echo $listaPacientesAtendimentos[$indice]['ID']; ?>&idAtendimento=<?php echo $listaAtendimentos[$indice]["ID"]; ?>" class="card-atendimento">
+                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=visualizarAtendimento&idPaciente=<?php echo $listaPacientesAtendimentos[$indice]['ID']; ?>&idAtendimento=<?php echo $linha["ID"]; ?>" class="card-atendimento">
                         <div class="card-body card-atendimento-body">
                             <div class="row">
                                 <div class="col-5">
@@ -312,9 +312,9 @@ foreach ($atendimentosPagina as $linha) {
                                 <textarea class="form-control" id="Motivo" <?php if ($visualizar == 1) {
                                                                                 echo "readonly";
                                                                             } ?> name="Motivo"><?php if ($visualizar == 1) {
-                                                                                                                                                    echo $dadosAtendimento[0]["Motivo"];
+                                                                                                                                                    echo $atendimentosPagina[0]["Motivo"];
                                                                                                                                                 } else {
-                                                                                                                                                    echo $dadosAgendamento[0]["Motivo"];
+                                                                                                                                                    echo $atendimentosPagina[0]["Motivo"];
                                                                                                                                                 } ?></textarea>
 
                             </div>

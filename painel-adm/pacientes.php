@@ -63,7 +63,8 @@ if (isset($_POST['btnNovoPaciente'])) {
       'Prontuario' => $_POST['Prontuario'],
       'Endereco' => $_POST['Endereco'],
       'Psicologo' => $_SESSION['id_psicologo'],
-      'Foto' => $enderecoFoto
+      'Foto' => $enderecoFoto,
+      'Situacao' => 1
     );
     $pacienteId = insert('paciente', $valores);
 
