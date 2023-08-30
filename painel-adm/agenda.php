@@ -277,8 +277,15 @@ if (isset($_POST['btnEditarAgendamento'])) {
   $db = $conexao;
 
   // Consulta para buscar os agendamentos cadastrados
-  $events = select('agendar', "Psicologo = $_SESSION[id_psicologo]");
-
+  $pacientes = select('paciente' , "Psicologo = $_SESSION[id_psicologo] and Situacao = 1 ");
+  $events = array();
+  foreach($pacientes as $linha){
+    $agendamento = select('agendar', "Psicologo = $_SESSION[id_psicologo] and Paciente = $linha[ID]");
+        // Adiciona cada agendamento ao array $events
+        foreach ($agendamento as $evento) {
+          $events[] = $evento;
+      }
+  }
   // Sistema de conversão - pega cada paciente de cada agendamento e busca o nome do paciente e armazena numa array na coluna Paciente
   foreach ($events as $i => $linha) {
     $nomePaciente = select('paciente', "ID = $linha[Paciente]", "Nome");

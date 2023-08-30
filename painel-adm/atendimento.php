@@ -16,8 +16,16 @@ $dataFim = $datetimeToday . " 23:59:59";
 
 
 //Buscando os agendamentos dentro do período do dia que não foram realizados "Realizado=0"
-$where = "Psicologo = " . $_SESSION['id_psicologo'] . " AND Data_Inicio >= '$dataInicio' AND Data_Inicio <= '$dataFim' AND Realizado = 0";
-$listaAgendamentos = select('agendar', $where);
+$pacientes = select('paciente', "Psicologo = $_SESSION[id_psicologo] and Situacao = 1 ");
+$listaAgendamentos = array();
+foreach ($pacientes as $linha) {
+    $where = "Psicologo = " . $_SESSION['id_psicologo'] . " AND Data_Inicio >= '$dataInicio' AND Data_Inicio <= '$dataFim' AND Realizado = 0 and Paciente = $linha[ID]";
+    $agendamentos = select('agendar', $where);
+    // Adiciona cada agendamento ao array $events
+    foreach ($agendamentos as $agendamento) {
+        $listaAgendamentos[] = $agendamento;
+    }
+}
 
 //Vou pegar cada ID de paciente de cada agendamento, consultar suas informações e armazenar numa array na ordem dos agendamentos.
 $listaPacientes = array(); // Inicializa a variável $listaPacientes como um array vazio
@@ -71,13 +79,13 @@ if (isset($_POST['btnFinalizarAtendimento'])) {
         "Forma_Pgto" => $formaPGTO,
         "Registro" => $registro,
         "OBS" => $OBS,
-        "Paciente" => $idPaciente, 
-        "Psicologo" => $_SESSION['id_psicologo']       
+        "Paciente" => $idPaciente,
+        "Psicologo" => $_SESSION['id_psicologo']
     );
 
-    insert ('atendimento', $dados);
+    insert('atendimento', $dados);
 
-    $dados = array (
+    $dados = array(
         'Realizado' => 1
     );
     update('agendar', $dados, "ID = $idAgendamento");
@@ -151,16 +159,20 @@ foreach ($atendimentosPagina as $linha) {
         <?php foreach ($listaAgendamentos as $indice => $linha) { ?>
             <div class="col-md-4 col-sm-12 mb-2">
                 <div class="card card-atendimento">
-                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]["ID"]; ?>&idAgendamento=<?php echo $linha["ID"]; ?>" class="card-atendimento">
+                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=atender&idPaciente=<?php echo $listaPacientes[$indice]["ID"]; ?>&idAgendamento=<?php echo $linha["ID"]; ?>"
+                        class="card-atendimento">
                         <div class="card-body card-atendimento-body">
                             <div class="row">
                                 <div class="col-5">
                                     <?php if (isset($listaPacientes[$indice]["Foto"])) { ?>
-                                        <img class="card-img-top foto-paciente" width="200em" src="<?php echo $listaPacientes[$indice]["Foto"]; ?>" alt="Imagem de capa do card">
+                                        <img class="card-img-top foto-paciente" width="200em"
+                                            src="<?php echo $listaPacientes[$indice]["Foto"]; ?>" alt="Imagem de capa do card">
                                     <?php } ?>
                                 </div>
                                 <div class="col-7">
-                                    <h2 class="card-title"><?php echo $listaPacientes[$indice]["Nome"]; ?></h2>
+                                    <h2 class="card-title">
+                                        <?php echo $listaPacientes[$indice]["Nome"]; ?>
+                                    </h2>
                                     <h5 class="card-text">
                                         <?php
                                         $dataInicio = strtotime($linha["Data_Inicio"]);
@@ -189,8 +201,11 @@ foreach ($atendimentosPagina as $linha) {
     <div class="col">
         <div class="float-right">
             <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2 " type="search" placeholder="Buscar atendimento" aria-label="Search" name="txtBuscarAtendimentos" value="<?php echo isset($_GET['txtBuscarAtendimentos']) ? $_GET['txtBuscarAtendimentos'] : ''; ?>">
-                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" name="btnBuscarAtendimentos">Buscar</button>
+                <input class="form-control mr-sm-2 " type="search" placeholder="Buscar atendimento" aria-label="Search"
+                    name="txtBuscarAtendimentos"
+                    value="<?php echo isset($_GET['txtBuscarAtendimentos']) ? $_GET['txtBuscarAtendimentos'] : ''; ?>">
+                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit"
+                    name="btnBuscarAtendimentos">Buscar</button>
             </form>
         </div>
     </div>
@@ -201,20 +216,27 @@ foreach ($atendimentosPagina as $linha) {
         <?php foreach ($atendimentosPagina as $indice => $linha) { ?>
             <div class="col-md-4 col-sm-12 mb-2">
                 <div class="card card-atendimento">
-                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=visualizarAtendimento&idPaciente=<?php echo $listaPacientesAtendimentos[$indice]['ID']; ?>&idAtendimento=<?php echo $linha["ID"]; ?>" class="card-atendimento">
+                    <a href="index.php?acao=<?php echo $item4; ?>&funcao=visualizarAtendimento&idPaciente=<?php echo $listaPacientesAtendimentos[$indice]['ID']; ?>&idAtendimento=<?php echo $linha["ID"]; ?>"
+                        class="card-atendimento">
                         <div class="card-body card-atendimento-body">
                             <div class="row">
                                 <div class="col-5">
                                     <?php if (isset($listaPacientesAtendimentos[$indice]["Foto"])) { ?>
-                                        <img class="card-img-top foto-paciente" width="200em" src="<?php echo $listaPacientesAtendimentos[$indice]["Foto"]; ?>" alt="Imagem de capa do card">
+                                        <img class="card-img-top foto-paciente" width="200em"
+                                            src="<?php echo $listaPacientesAtendimentos[$indice]["Foto"]; ?>"
+                                            alt="Imagem de capa do card">
                                     <?php } ?>
                                 </div>
                                 <div class="col-7">
-                                    <h2 class="card-title"><?php echo $listaPacientesAtendimentos[$indice]["Nome"]; ?></h2>
-                                    <h5 class="card-text"><?php
-                                                            $dataInicio = strtotime($linha["Data_Inicio"]);
-                                                            $formatoData = date("d/m H:i", $dataInicio);
-                                                            echo $formatoData; ?></h5>
+                                    <h2 class="card-title">
+                                        <?php echo $listaPacientesAtendimentos[$indice]["Nome"]; ?>
+                                    </h2>
+                                    <h5 class="card-text">
+                                        <?php
+                                        $dataInicio = strtotime($linha["Data_Inicio"]);
+                                        $formatoData = date("d/m H:i", $dataInicio);
+                                        echo $formatoData; ?>
+                                    </h5>
                                 </div>
                             </div>
                         </div>
@@ -231,12 +253,14 @@ foreach ($atendimentosPagina as $linha) {
 
 
 
-<div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalAtenderVisualizar" tabindex="-1" role="dialog" aria-labelledby="#modalAtenderVisualizar" aria-hidden="true">
+<div class="modal fade modal-paciente novo-modal" data-backdrop="static" id="modalAtenderVisualizar" tabindex="-1"
+    role="dialog" aria-labelledby="#modalAtenderVisualizar" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalAtenderVisualizar">ATENDIMENTO</h5>
-                <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral" src="../img/logosistemapsico.png"></div>
+                <div class="col-lg-1 mr-lg-2 d-none d-lg-block"><img class="logo-lateral"
+                        src="../img/logosistemapsico.png"></div>
             </div>
             <div class="modal-body">
                 <?php
@@ -275,52 +299,68 @@ foreach ($atendimentosPagina as $linha) {
 
                 if (isset($_GET['idPaciente'])) { ?>
 
-                    <form id="formModalAtendimento" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>?acao=<?php echo $item4; ?>">
+                    <form id="formModalAtendimento" method="POST"
+                        action="<?php echo $_SERVER['PHP_SELF']; ?>?acao=<?php echo $item4; ?>">
                         <div class="row">
                             <div class="col-md-2 col-sm-12">
                                 <div class=" text-center mt-3">
                                     <?php if (isset($dadosPaciente[0]["Foto"])) { ?>
-                                        <img class="card-img-top foto-paciente " width="200em" src="<?php echo $dadosPaciente[0]["Foto"]; ?>"> <br><br>
+                                        <img class="card-img-top foto-paciente " width="200em"
+                                            src="<?php echo $dadosPaciente[0]["Foto"]; ?>"> <br><br>
                                     <?php } ?>
                                     <?php if ($visualizar == 0) { ?>
-                                        <h5><?php $dataInicio = strtotime($dadosAgendamento[0]["Data_Inicio"]);
+                                        <h5>
+                                            <?php $dataInicio = strtotime($dadosAgendamento[0]["Data_Inicio"]);
                                             $formatoData = date("d/m - H:i", $dataInicio);
-                                            echo $formatoData; ?></h5>
+                                            echo $formatoData; ?>
+                                        </h5>
                                         </h5>
                                     <?php } else { ?>
-                                        <h5><?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
+                                        <h5>
+                                            <?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
                                             $formatoData = date("d/m", $dataInicio);
                                             echo $formatoData; ?> <br>
-                                            Início: <?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
-                                                    $formatoData = date("H:i", $dataInicio);
-                                                    echo $formatoData; ?> <br>
-                                            Termínio: <?php $dataFim = strtotime($dadosAtendimento[0]["Data_Fim"]);
-                                                        $formatoData = date("H:i", $dataFim);
-                                                        echo $formatoData; ?>
+                                            Início:
+                                            <?php $dataInicio = strtotime($dadosAtendimento[0]["Data_Inicio"]);
+                                            $formatoData = date("H:i", $dataInicio);
+                                            echo $formatoData; ?> <br>
+                                            Termínio:
+                                            <?php $dataFim = strtotime($dadosAtendimento[0]["Data_Fim"]);
+                                            $formatoData = date("H:i", $dataFim);
+                                            echo $formatoData; ?>
                                         </h5>
                                     <?php } ?>
                                 </div>
                             </div>
                             <div class="col-md-4 col-sm-12">
-                                <h4>Paciente: <?php echo $dadosPaciente[0]["Nome"]; ?></h4>
-                                <h5>Gênero: <?php echo $dadosPaciente[0]["Genero"]; ?></h5>
-                                <h5>Convênio: <?php echo $dadosConvenio[0]["Nome"]; ?></h5>
+                                <h4>Paciente:
+                                    <?php echo $dadosPaciente[0]["Nome"]; ?>
+                                </h4>
+                                <h5>Gênero:
+                                    <?php echo $dadosPaciente[0]["Genero"]; ?>
+                                </h5>
+                                <h5>Convênio:
+                                    <?php echo $dadosConvenio[0]["Nome"]; ?>
+                                </h5>
 
-                                <label for="Prontuario">Prontuário:</label><textarea readonly rows="4" id="Prontuario" class="form-control"><?php echo $dadosPaciente[0]["Prontuario"]; ?></textarea>
+                                <label for="Prontuario">Prontuário:</label><textarea readonly rows="4" id="Prontuario"
+                                    class="form-control"><?php echo $dadosPaciente[0]["Prontuario"]; ?></textarea>
 
                                 <label for="Motivo">Motivo:</label>
                                 <textarea class="form-control" id="Motivo" <?php if ($visualizar == 1) {
-                                                                                echo "readonly";
-                                                                            } ?> name="Motivo"><?php if ($visualizar == 1) {
-                                                                                                                                                    echo $atendimentosPagina[0]["Motivo"];
-                                                                                                                                                } else {
-                                                                                                                                                    echo $atendimentosPagina[0]["Motivo"];
-                                                                                                                                                } ?></textarea>
+                                    echo "readonly";
+                                } ?> name="Motivo"><?php if ($visualizar == 1) {
+                                      echo $atendimentosPagina[0]["Motivo"];
+                                  } else {
+                                      echo $atendimentosPagina[0]["Motivo"];
+                                  } ?></textarea>
 
                             </div>
                             <div class="col-md-5 col-sm-12">
                                 <label for="Registro">Registro:</label>
-                                <textarea class="form-control" id="Registro" <?php echo $visualizar == 1 ? "readonly" : "" ?> rows="13" name="Registro"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["Registro"] : "" ?></textarea>
+                                <textarea class="form-control" id="Registro" <?php echo $visualizar == 1 ? "readonly" : "" ?>
+                                    rows="13"
+                                    name="Registro"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["Registro"] : "" ?></textarea>
                             </div>
                         </div>
 
@@ -334,7 +374,8 @@ foreach ($atendimentosPagina as $linha) {
                                             <div class="input-group-prepend">
                                                 <div class="input-group-text">R$</div>
                                             </div>
-                                            <input type="number" id="Valor" name="Valor" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> placeholder="Valor do Atendimento" value="<?php echo $visualizar == 1 ? $dadosAtendimento[0]["Valor"] : $dadosAgendamento[0]['Valor']; ?>">
+                                            <input type="number" id="Valor" name="Valor" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> placeholder="Valor do Atendimento"
+                                                value="<?php echo $visualizar == 1 ? $dadosAtendimento[0]["Valor"] : $dadosAgendamento[0]['Valor']; ?>">
                                         </div>
                                     </div>
                                     <div class="col-md-12 col-7">
@@ -348,7 +389,9 @@ foreach ($atendimentosPagina as $linha) {
                                                 <option>Cartão crédito/débito</option>
                                                 <option>Outro</option>
                                             <?php } else { ?>
-                                                <option><?php echo $dadosAtendimento[0]["Forma_Pgto"]; ?></option>
+                                                <option>
+                                                    <?php echo $dadosAtendimento[0]["Forma_Pgto"]; ?>
+                                                </option>
                                             <?php } ?>
 
                                         </select>
@@ -358,14 +401,17 @@ foreach ($atendimentosPagina as $linha) {
 
                             <div class="col-md-5 col-sm-12">
                                 <label for="OBS">OBS.</label>
-                                <textarea rows="4" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?> id="OBS" name="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["OBS"] : $dadosAgendamento[0]['OBS']; ?></textarea>
+                                <textarea rows="4" class="form-control" <?php echo $visualizar == 1 ? "readonly" : "" ?>
+                                    id="OBS"
+                                    name="OBS"><?php echo $visualizar == 1 ? $dadosAtendimento[0]["OBS"] : $dadosAgendamento[0]['OBS']; ?></textarea>
                             </div>
                         </div>
 
 
                         <input type="hidden" name="DataInicio" value="<?php echo date('Y-m-d H:i:s'); ?>">
                         <input type="hidden" name="idPaciente" value="<?php echo $dadosPaciente[0]["ID"]; ?>">
-                        <?php if ($visualizar == 0) { ?><input type="hidden" name="idAgendamento" value="<?php echo $dadosAgendamento[0]["ID"]; ?>"> <?php } ?>
+                        <?php if ($visualizar == 0) { ?><input type="hidden" name="idAgendamento"
+                                value="<?php echo $dadosAgendamento[0]["ID"]; ?>"> <?php } ?>
 
                     </form>
                 <?php } ?>
@@ -374,14 +420,18 @@ foreach ($atendimentosPagina as $linha) {
             <div class="modal-footer">
                 <?php if ($visualizar == 1) { ?>
                     <div class="text-left mr-auto">
-                        <a form="formModalPaciente" class="btn btn-warning text-white" href="export/atendimento.php?idAtendimento=<?php if (isset($dadosAtendimento[0]["ID"])) {
-                                                                                                                                        echo $dadosAtendimento[0]["ID"];
-                                                                                                                                    } ?>" target="_blank">Imprimir Relatório</a>
+                        <a form="formModalPaciente" class="btn btn-warning text-white"
+                            href="export/atendimento.php?idAtendimento=<?php if (isset($dadosAtendimento[0]["ID"])) {
+                                echo $dadosAtendimento[0]["ID"];
+                            } ?>" target="_blank">Imprimir Relatório</a>
                     </div>
                 <?php } ?>
 
-                <?php if ($visualizar == 0) { ?><input form="formModalAtendimento" type="submit" class="btn btn-success" value="Finalizar Atendimento" name="btnFinalizarAtendimento"> <?php } ?>
-                <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger" name="<?php echo $item4 ?>"><?php echo $visualizar == 1 ? "Fechar" : "Cancelar" ?></button>
+                <?php if ($visualizar == 0) { ?><input form="formModalAtendimento" type="submit" class="btn btn-success"
+                        value="Finalizar Atendimento" name="btnFinalizarAtendimento">
+                <?php } ?>
+                <button form="formModalPaciente" type="reset" data-dismiss="modal" class="btn btn-danger"
+                    name="<?php echo $item4 ?>"><?php echo $visualizar == 1 ? "Fechar" : "Cancelar" ?></button>
             </div>
         </div>
     </div>
@@ -393,13 +443,14 @@ foreach ($atendimentosPagina as $linha) {
         <nav aria-label="Navegação de página">
             <ul class="pagination justify-content-center">
                 <?php for ($i = 1; $i <= $totalPaginas; $i++) { ?>
-                    <li class="page-item <?php if ($i == $paginaAtual) echo 'active'; ?>">
+                    <li class="page-item <?php if ($i == $paginaAtual)
+                        echo 'active'; ?>">
                         <a class="page-link" href="?acao=atendimento&<?php if (isset($_GET['txtBuscarAtendimentos'])) {
-                                                                            echo "&txtBuscarAtendimentos=" . $_GET['txtBuscarAtendimentos'];
-                                                                        }
-                                                                        if (isset($_GET['btnBuscarAtendimentos'])) {
-                                                                            echo "&btnBuscarAtendimentos=";
-                                                                        } ?>&pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            echo "&txtBuscarAtendimentos=" . $_GET['txtBuscarAtendimentos'];
+                        }
+                        if (isset($_GET['btnBuscarAtendimentos'])) {
+                            echo "&btnBuscarAtendimentos=";
+                        } ?>&pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
                     </li>
                 <?php } ?>
 
