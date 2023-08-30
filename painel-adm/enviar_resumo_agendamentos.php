@@ -1,6 +1,11 @@
 <?php
 //CONEXÃO A PARTE PARA TAREFA CRON
 
+
+include_once('../config.php');
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 try {
     $conexao = new PDO("mysql:host=108.167.132.36;dbname=hgsys947_systempsi;charset=utf8", "hgsys947_admin", "systempsi23");
 } catch (Exception $e)  {
@@ -46,12 +51,12 @@ try {
                 $stmtPaciente = $conexao->prepare($sqlPaciente);
                 $stmtPaciente->bindParam(':idPaciente', $idPaciente);
                 $stmtPaciente->execute();
-                $paciente = $stmtPaciente->fetch(PDO::FETCH_ASSOC);
+                $paciente = $stmtPaciente->fetch();
 
                 $mensagem .= "<li>Paciente: " . $paciente['Nome'] . "</li>";
                 $mensagem .= "<li>Horário: " . date('H:i', strtotime($agendamento['Data_Inicio'])) . "</li>";
-                $mensagem .= "<li>Motivo: " . $agendamento['Motivo'] . "</li>";
-                $mensagem .= "<li>OBS.: " . $agendamento['OBS.'] . "</li>";
+                $mensagem .= "<li>Motivo: " . formatarArrayIsset($agendamento, 'Motivo') . "</li>";
+                $mensagem .= "<li>OBS.: " . formatarArrayIsset($agendamento, 'OBS') . "</li>";
                 $mensagem .= "<br>";
             }
             $mensagem .= "</ul>";
@@ -59,13 +64,22 @@ try {
 
 
             // Envio do e-mail para o psicólogo
-            $to = $psicologo['Email'];
-            $subject = "Resumo dos Agendamentos - " . date('d/m/Y');
-            $headers = "MIME-Version: 1.0" . "\r\n";
-            $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-            $headers .= "From: contato@systempsi.com.br" . "\r\n";
-
-            mail($to, $subject, $mensagem, $headers);
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = 'smtp.titan.email';
+            $mail->Port = 587;
+            $mail->SMTPAuth = true;
+            $mail->Username = 'contato@systempsi.com.br';
+            $mail->Password = 'contatoSystempsi23!';
+            $mail->SMTPSecure = 'SSL';  // Corrigido para 'ssl' em letra minúscula
+            $mail->CharSet = 'UTF-8';
+            $mail->setFrom('contato@systempsi.com.br', 'Agendamentos');
+            $mail->addAddress($psicologo['Email']);  // Supondo que $psicologo é um array associativo
+            $mail->Subject = "Resumo dos Agendamentos - " . date('d/m/Y');
+            $mail->isHTML(true);
+            $mail->Body = "$mensagem";
+            $mail->send();
+            
         }
     }
 } catch (PDOException $e) {

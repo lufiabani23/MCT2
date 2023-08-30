@@ -123,5 +123,14 @@ function update($tabela, $dados, $where) {
 }
 
 
+function formatarArrayIsset($array, $index, $key = null) {
+    if($key != null) {
+        return isset($array[$key][$index]) ? $array[$key][$index] : '';
+    } else{
+        return isset($array[$index]) ? $array[$index] : '';
+    }
+}
+
+
 ?>
 
